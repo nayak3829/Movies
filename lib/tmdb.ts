@@ -1,0 +1,143 @@
+const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY || '';
+const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
+
+export interface Movie {
+  id: number;
+  title: string;
+  name?: string;
+  overview: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  vote_average: number;
+  release_date?: string;
+  first_air_date?: string;
+  genre_ids: number[];
+  media_type?: string;
+}
+
+export interface MovieResponse {
+  page: number;
+  results: Movie[];
+  total_pages: number;
+  total_results: number;
+}
+
+export interface Genre {
+  id: number;
+  name: string;
+}
+
+export interface MovieDetails extends Movie {
+  genres: Genre[];
+  runtime: number;
+  tagline: string;
+  status: string;
+  budget: number;
+  revenue: number;
+  production_companies: { id: number; name: string; logo_path: string | null }[];
+  videos?: {
+    results: {
+      key: string;
+      site: string;
+      type: string;
+      name: string;
+    }[];
+  };
+  credits?: {
+    cast: {
+      id: number;
+      name: string;
+      character: string;
+      profile_path: string | null;
+    }[];
+  };
+}
+
+export function getImageUrl(path: string | null, size: 'w200' | 'w300' | 'w500' | 'w780' | 'original' = 'w500'): string {
+  if (!path) return '/placeholder-movie.jpg';
+  return `${TMDB_IMAGE_BASE}/${size}${path}`;
+}
+
+export async function fetchFromTMDB<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
+  const searchParams = new URLSearchParams({
+    api_key: TMDB_API_KEY,
+    ...params,
+  });
+  
+  const response = await fetch(`${TMDB_BASE_URL}${endpoint}?${searchParams}`, {
+    next: { revalidate: 3600 },
+  });
+  
+  if (!response.ok) {
+    throw new Error(`TMDB API error: ${response.status}`);
+  }
+  
+  return response.json();
+}
+
+export async function getTrending(timeWindow: 'day' | 'week' = 'week'): Promise<MovieResponse> {
+  return fetchFromTMDB<MovieResponse>(`/trending/all/${timeWindow}`);
+}
+
+export async function getPopularMovies(): Promise<MovieResponse> {
+  return fetchFromTMDB<MovieResponse>('/movie/popular');
+}
+
+export async function getTopRatedMovies(): Promise<MovieResponse> {
+  return fetchFromTMDB<MovieResponse>('/movie/top_rated');
+}
+
+export async function getUpcomingMovies(): Promise<MovieResponse> {
+  return fetchFromTMDB<MovieResponse>('/movie/upcoming');
+}
+
+export async function getNowPlayingMovies(): Promise<MovieResponse> {
+  return fetchFromTMDB<MovieResponse>('/movie/now_playing');
+}
+
+export async function getPopularTVShows(): Promise<MovieResponse> {
+  return fetchFromTMDB<MovieResponse>('/tv/popular');
+}
+
+export async function getTopRatedTVShows(): Promise<MovieResponse> {
+  return fetchFromTMDB<MovieResponse>('/tv/top_rated');
+}
+
+export async function getMovieDetails(id: number): Promise<MovieDetails> {
+  return fetchFromTMDB<MovieDetails>(`/movie/${id}`, { append_to_response: 'videos,credits' });
+}
+
+export async function getTVDetails(id: number): Promise<MovieDetails> {
+  return fetchFromTMDB<MovieDetails>(`/tv/${id}`, { append_to_response: 'videos,credits' });
+}
+
+export async function searchMulti(query: string): Promise<MovieResponse> {
+  return fetchFromTMDB<MovieResponse>('/search/multi', { query });
+}
+
+export async function getMoviesByGenre(genreId: number): Promise<MovieResponse> {
+  return fetchFromTMDB<MovieResponse>('/discover/movie', { with_genres: genreId.toString() });
+}
+
+export const GENRES: Genre[] = [
+  { id: 28, name: 'Action' },
+  { id: 12, name: 'Adventure' },
+  { id: 16, name: 'Animation' },
+  { id: 35, name: 'Comedy' },
+  { id: 80, name: 'Crime' },
+  { id: 99, name: 'Documentary' },
+  { id: 18, name: 'Drama' },
+  { id: 10751, name: 'Family' },
+  { id: 14, name: 'Fantasy' },
+  { id: 36, name: 'History' },
+  { id: 27, name: 'Horror' },
+  { id: 10402, name: 'Music' },
+  { id: 9648, name: 'Mystery' },
+  { id: 10749, name: 'Romance' },
+  { id: 878, name: 'Science Fiction' },
+  { id: 10770, name: 'TV Movie' },
+  { id: 53, name: 'Thriller' },
+  { id: 10752, name: 'War' },
+  { id: 37, name: 'Western' },
+];
