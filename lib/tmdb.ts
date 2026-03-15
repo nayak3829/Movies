@@ -151,6 +151,8 @@ export async function getOnTheAirTV(): Promise<MovieResponse> {
   return fetchFromTMDB<MovieResponse>('/tv/on_the_air');
 }
 
+// TV show utilities
+
 export const GENRES: Genre[] = [
   { id: 28, name: 'Action' },
   { id: 12, name: 'Adventure' },
