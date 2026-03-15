@@ -204,33 +204,90 @@ export function removeCustomServer(serverId: string): void {
   localStorage.setItem(CUSTOM_SERVERS_KEY, JSON.stringify(customServers));
 }
 
-// Get all servers (custom + default), sorted by priority and stats
+// Calculate server score based on stats and recency
+function calculateServerScore(stats: ServerStats | undefined, priority: number): number {
+  if (!stats) return 100 - priority; // Default score based on priority
+  
+  const total = stats.successCount + stats.failCount;
+  if (total === 0) return 100 - priority;
+  
+  const successRate = stats.successCount / total;
+  const recencyBonus = stats.lastSuccess 
+    ? Math.max(0, 20 - (Date.now() - stats.lastSuccess) / (1000 * 60 * 60 * 24)) // Bonus for recent success (within 20 days)
+    : 0;
+  const loadTimeBonus = stats.avgLoadTime 
+    ? Math.max(0, 15 - stats.avgLoadTime / 1000) // Bonus for fast load times
+    : 0;
+  
+  // Score formula: success rate (60%) + recency (20%) + load time (10%) + priority (10%)
+  return (successRate * 60) + recencyBonus + loadTimeBonus + ((14 - Math.min(priority, 14)) * 0.7);
+}
+
+// Get all servers (custom + default), sorted by smart scoring
 export function getAllServers(): StreamingServer[] {
   const customServers = getCustomServers();
   const stats = getServerStats();
   
   const allServers = [...customServers, ...DEFAULT_SERVERS];
   
-  // Sort by success rate and priority
+  // Sort by calculated score (higher = better)
   return allServers.sort((a, b) => {
-    const statsA = stats[a.id] || { successCount: 0, failCount: 0 };
-    const statsB = stats[b.id] || { successCount: 0, failCount: 0 };
+    const statsA = stats[a.id];
+    const statsB = stats[b.id];
     
-    const totalA = statsA.successCount + statsA.failCount;
-    const totalB = statsB.successCount + statsB.failCount;
+    const scoreA = calculateServerScore(statsA, a.priority ?? 99);
+    const scoreB = calculateServerScore(statsB, b.priority ?? 99);
     
-    // If both have stats, prefer higher success rate
-    if (totalA > 2 && totalB > 2) {
-      const rateA = statsA.successCount / totalA;
-      const rateB = statsB.successCount / totalB;
-      if (Math.abs(rateA - rateB) > 0.15) {
-        return rateB - rateA;
-      }
+    // Higher score comes first
+    return scoreB - scoreA;
+  });
+}
+
+// Get servers sorted for auto-fetch (prioritize working servers)
+export function getServersForAutoFetch(): StreamingServer[] {
+  const stats = getServerStats();
+  const allServers = getAllServers();
+  
+  // Separate servers into categories
+  const recentlyWorking: StreamingServer[] = [];
+  const highSuccessRate: StreamingServer[] = [];
+  const untested: StreamingServer[] = [];
+  const lowSuccessRate: StreamingServer[] = [];
+  
+  const oneHourAgo = Date.now() - (1000 * 60 * 60);
+  const oneDayAgo = Date.now() - (1000 * 60 * 60 * 24);
+  
+  for (const server of allServers) {
+    const serverStats = stats[server.id];
+    
+    if (!serverStats || (serverStats.successCount === 0 && serverStats.failCount === 0)) {
+      untested.push(server);
+      continue;
     }
     
-    // Then by priority (lower = better)
-    return (a.priority ?? 99) - (b.priority ?? 99);
-  });
+    const total = serverStats.successCount + serverStats.failCount;
+    const successRate = serverStats.successCount / total;
+    
+    // Recently worked (within last hour) - highest priority
+    if (serverStats.lastSuccess && serverStats.lastSuccess > oneHourAgo) {
+      recentlyWorking.push(server);
+    }
+    // Good success rate (>60%) and worked within a day
+    else if (successRate > 0.6 && serverStats.lastSuccess && serverStats.lastSuccess > oneDayAgo) {
+      highSuccessRate.push(server);
+    }
+    // Low success rate or old
+    else if (successRate < 0.4) {
+      lowSuccessRate.push(server);
+    }
+    // Everything else goes to high success
+    else {
+      highSuccessRate.push(server);
+    }
+  }
+  
+  // Return in order: recently working -> high success -> untested -> low success
+  return [...recentlyWorking, ...highSuccessRate, ...untested, ...lowSuccessRate];
 }
 
 // Get server statistics

@@ -26,6 +26,7 @@ import { Label } from '@/components/ui/label';
 import {
   StreamingServer,
   getAllServers,
+  getServersForAutoFetch,
   getEmbedUrl,
   addCustomServer,
   removeCustomServer,
@@ -68,7 +69,7 @@ export function VideoPlayer({
   const [isLoading, setIsLoading] = useState(true);
   const [isAutoFetching, setIsAutoFetching] = useState(true);
   const [serverStatuses, setServerStatuses] = useState<Record<string, ServerStatus>>({});
-  const [statusMessage, setStatusMessage] = useState('Auto-detecting best server...');
+  const [statusMessage, setStatusMessage] = useState('Finding best live server...');
   const [showSettings, setShowSettings] = useState(false);
   const [showAddServer, setShowAddServer] = useState(false);
   const [loadStartTime, setLoadStartTime] = useState<number>(0);
@@ -82,14 +83,17 @@ export function VideoPlayer({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const triedServersRef = useRef<Set<number>>(new Set());
 
-  // Load servers on mount
+  // Load servers on mount - use smart auto-fetch sorting
   useEffect(() => {
-    const loadedServers = getAllServers();
+    const loadedServers = getServersForAutoFetch();
     // If no IMDB ID, filter out the all-servers option
     const filteredServers = imdbId 
       ? loadedServers 
       : loadedServers.filter(s => s.id !== 'all-servers');
     setServers(filteredServers);
+    
+    // Log server order for debugging
+    console.log('[v0] Server order for auto-fetch:', filteredServers.map(s => s.name).slice(0, 5));
   }, [imdbId]);
 
   // Block popup windows from streaming servers
@@ -134,15 +138,28 @@ export function VideoPlayer({
         setServerStatuses(prev => ({ ...prev, [currentId]: 'failed' }));
         updateServerStats(currentId, false);
       }
-      setStatusMessage(`${servers[currentServerIndex]?.name} failed. Trying ${servers[nextIndex]?.name}...`);
+      
+      // Show more informative message
+      const nextServer = servers[nextIndex];
+      const stats = getServerStats()[nextServer?.id];
+      const hasGoodStats = stats && stats.successCount > stats.failCount;
+      
+      setStatusMessage(
+        hasGoodStats 
+          ? `Trying ${nextServer?.name} (reliable)...`
+          : `Trying ${nextServer?.name}...`
+      );
+      
       triedServersRef.current.add(currentServerIndex);
       setCurrentServerIndex(nextIndex);
       setIsLoading(true);
       setLoadStartTime(Date.now());
+      
+      console.log('[v0] Switching to server:', nextServer?.name);
     } else {
       setIsAutoFetching(false);
       setIsLoading(false);
-      setStatusMessage('All servers tried. Select manually or retry.');
+      setStatusMessage('All servers tried. Tap to retry or select manually.');
     }
   }, [currentServerIndex, servers]);
 
@@ -156,8 +173,8 @@ export function VideoPlayer({
   };
 
   const handleRetryAutoFetch = () => {
-    // Reload servers with updated stats
-    const loadedServers = getAllServers();
+    // Reload servers with smart sorting based on stats
+    const loadedServers = getServersForAutoFetch();
     const filteredServers = imdbId 
       ? loadedServers 
       : loadedServers.filter(s => s.id !== 'all-servers');
@@ -168,7 +185,9 @@ export function VideoPlayer({
     setLoadStartTime(Date.now());
     triedServersRef.current.clear();
     setServerStatuses({});
-    setStatusMessage('Auto-detecting best server...');
+    setStatusMessage('Finding best live server...');
+    
+    console.log('[v0] Retrying with server order:', filteredServers.map(s => s.name).slice(0, 5));
   };
 
   const handleNextEpisode = () => {
@@ -229,7 +248,7 @@ export function VideoPlayer({
     setServers(filteredServers);
   };
 
-  // Auto-fetch logic with timeout
+  // Auto-fetch logic with smart timeout
   useEffect(() => {
     if (!isAutoFetching || servers.length === 0) return;
 
@@ -238,17 +257,29 @@ export function VideoPlayer({
     }
 
     const currentId = servers[currentServerIndex]?.id;
+    const stats = getServerStats()[currentId];
+    
     if (currentId) {
       setServerStatuses(prev => ({ ...prev, [currentId]: 'loading' }));
     }
-    setStatusMessage(`Trying ${servers[currentServerIndex]?.name}...`);
+    
+    // Show server reliability info
+    const hasGoodStats = stats && stats.successCount > stats.failCount;
+    setStatusMessage(
+      hasGoodStats 
+        ? `Trying ${servers[currentServerIndex]?.name} (reliable)...`
+        : `Trying ${servers[currentServerIndex]?.name}...`
+    );
 
-    // Set a 6-second timeout to try next server
+    // Dynamic timeout: 4s for unknown servers, 6s for servers with good history
+    const timeout = hasGoodStats ? 6000 : 4000;
+    
     timeoutRef.current = setTimeout(() => {
       if (isLoading && isAutoFetching) {
+        console.log('[v0] Server timeout:', servers[currentServerIndex]?.name);
         tryNextServer();
       }
-    }, 6000);
+    }, timeout);
 
     return () => {
       if (timeoutRef.current) {
@@ -268,6 +299,7 @@ export function VideoPlayer({
     if (currentId) {
       setServerStatuses(prev => ({ ...prev, [currentId]: 'success' }));
       updateServerStats(currentId, true, loadTime);
+      console.log('[v0] Server loaded successfully:', currentServer?.name, 'in', loadTime, 'ms');
     }
     
     setIsLoading(false);
@@ -365,22 +397,38 @@ export function VideoPlayer({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto w-56">
                 <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                  Servers ({servers.length})
+                  Servers ({servers.length}) - Sorted by reliability
                 </div>
-                {servers.map((s, index) => (
-                  <DropdownMenuItem
-                    key={s.id}
-                    onClick={() => handleServerChange(index)}
-                    className={`flex items-center justify-between ${currentServerIndex === index ? 'bg-primary/20' : ''}`}
-                  >
-                    <span className="flex items-center gap-2">
-                      {s.isCustom && <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1 rounded">Custom</span>}
-                      {s.id === 'all-servers' && <span className="text-[10px] bg-green-500/20 text-green-400 px-1 rounded">Best</span>}
-                      {s.name}
-                    </span>
-                    {getServerStatusIcon(s.id)}
-                  </DropdownMenuItem>
-                ))}
+                {servers.map((s, index) => {
+                  const stats = getServerStats()[s.id];
+                  const total = stats ? stats.successCount + stats.failCount : 0;
+                  const successRate = total > 0 ? Math.round((stats.successCount / total) * 100) : null;
+                  const isReliable = stats && stats.successCount > stats.failCount;
+                  const isRecent = stats?.lastSuccess && (Date.now() - stats.lastSuccess) < (1000 * 60 * 60);
+                  
+                  return (
+                    <DropdownMenuItem
+                      key={s.id}
+                      onClick={() => handleServerChange(index)}
+                      className={`flex items-center justify-between ${currentServerIndex === index ? 'bg-primary/20' : ''}`}
+                    >
+                      <span className="flex items-center gap-2">
+                        {s.isCustom && <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1 rounded">Custom</span>}
+                        {isRecent && <span className="text-[10px] bg-green-500/20 text-green-400 px-1 rounded">Live</span>}
+                        {!isRecent && isReliable && <span className="text-[10px] bg-yellow-500/20 text-yellow-400 px-1 rounded">Good</span>}
+                        <span className="truncate max-w-[120px]">{s.name}</span>
+                      </span>
+                      <span className="flex items-center gap-1">
+                        {successRate !== null && total > 2 && (
+                          <span className={`text-[10px] ${successRate > 60 ? 'text-green-400' : successRate > 30 ? 'text-yellow-400' : 'text-red-400'}`}>
+                            {successRate}%
+                          </span>
+                        )}
+                        {getServerStatusIcon(s.id)}
+                      </span>
+                    </DropdownMenuItem>
+                  );
+                })}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleRetryAutoFetch} className="text-yellow-500">
                   <RefreshCw className="w-4 h-4 mr-2" />
