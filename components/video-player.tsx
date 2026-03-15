@@ -4,7 +4,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   X, ChevronDown, Server, Loader2, CheckCircle, XCircle, 
   RefreshCw, Plus, Trash2, Settings, Zap, BarChart3,
-  ChevronLeft, ChevronRight, SkipForward
+  ChevronLeft, ChevronRight, SkipForward, Crown, Medal, Award,
+  TrendingUp, TrendingDown, Clock, Activity, Wifi, CheckCircle2, AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -78,6 +79,51 @@ export function VideoPlayer({
   const [newServerName, setNewServerName] = useState('');
   const [newServerMovie, setNewServerMovie] = useState('');
   const [newServerTv, setNewServerTv] = useState('');
+  const [serverStatsRefresh, setServerStatsRefresh] = useState(0);
+
+  // Auto-refresh server stats when settings dialog is open
+  useEffect(() => {
+    if (!showSettings) return;
+    const interval = setInterval(() => {
+      setServerStatsRefresh(prev => prev + 1);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [showSettings]);
+
+  // Get enhanced server list with stats
+  const getEnhancedServerList = () => {
+    const stats = getServerStats();
+    return servers.map(server => {
+      const serverStats = stats[server.id];
+      const total = serverStats ? serverStats.successCount + serverStats.failCount : 0;
+      const successRate = total > 0 ? serverStats!.successCount / total : null;
+      const avgLoadTime = serverStats?.avgLoadTime ?? null;
+      const lastUsed = serverStats?.lastSuccess ?? null;
+      return {
+        ...server,
+        stats: serverStats,
+        successRate,
+        total,
+        avgLoadTime,
+        lastUsed,
+        successCount: serverStats?.successCount ?? 0,
+        failCount: serverStats?.failCount ?? 0
+      };
+    });
+  };
+
+  // Get summary stats
+  const getSummaryStats = () => {
+    const serverList = getEnhancedServerList();
+    const totalServers = serverList.length;
+    const testedServers = serverList.filter(s => s.total > 0).length;
+    const goodServers = serverList.filter(s => s.successRate !== null && s.successRate > 0.7).length;
+    const totalRequests = serverList.reduce((acc, s) => acc + s.total, 0);
+    const avgSuccessRate = serverList.filter(s => s.successRate !== null).length > 0
+      ? serverList.filter(s => s.successRate !== null).reduce((acc, s) => acc + (s.successRate ?? 0), 0) / serverList.filter(s => s.successRate !== null).length
+      : 0;
+    return { totalServers, testedServers, goodServers, totalRequests, avgSuccessRate };
+  };
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -458,10 +504,62 @@ export function VideoPlayer({
                 </DialogTrigger>
               <DialogContent className="max-w-[calc(100vw-24px)] sm:max-w-md max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Server Settings</DialogTitle>
+                  <DialogTitle className="flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <Server className="w-5 h-5 text-red-500" />
+                      Server Settings
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setServerStatsRefresh(prev => prev + 1)}
+                        className="p-1.5 rounded-md hover:bg-muted transition-colors"
+                        title="Refresh"
+                      >
+                        <RefreshCw className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                      <button
+                        onClick={handleResetStats}
+                        className="p-1.5 rounded-md hover:bg-destructive/10 transition-colors"
+                        title="Reset all stats"
+                      >
+                        <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                      </button>
+                    </div>
+                  </DialogTitle>
+                  <p className="text-xs text-muted-foreground flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    Auto-updating every 5s
+                  </p>
                 </DialogHeader>
                 
                 <div className="space-y-4 py-4">
+                  {/* Summary Stats Cards */}
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className="flex flex-col items-center p-2 rounded-lg bg-red-500/10 border border-red-500/20">
+                      <Server className="w-4 h-4 text-red-500 mb-1" />
+                      <span className="text-lg font-bold text-foreground">{getSummaryStats().totalServers}</span>
+                      <span className="text-[10px] text-muted-foreground">Total</span>
+                    </div>
+                    <div className="flex flex-col items-center p-2 rounded-lg bg-green-500/10 border border-green-500/20">
+                      <CheckCircle2 className="w-4 h-4 text-green-500 mb-1" />
+                      <span className="text-lg font-bold text-green-500">{getSummaryStats().goodServers}</span>
+                      <span className="text-[10px] text-muted-foreground">Good</span>
+                    </div>
+                    <div className="flex flex-col items-center p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                      <Activity className="w-4 h-4 text-blue-500 mb-1" />
+                      <span className="text-lg font-bold text-blue-500">{getSummaryStats().totalRequests}</span>
+                      <span className="text-[10px] text-muted-foreground">Requests</span>
+                    </div>
+                    <div className="flex flex-col items-center p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                      <TrendingUp className="w-4 h-4 text-yellow-500 mb-1" />
+                      <span className="text-lg font-bold text-yellow-500">{Math.round(getSummaryStats().avgSuccessRate * 100)}%</span>
+                      <span className="text-[10px] text-muted-foreground">Avg Rate</span>
+                    </div>
+                  </div>
+
                   {/* Add Server Button */}
                   <Button 
                     variant="outline" 
@@ -533,44 +631,124 @@ export function VideoPlayer({
                     </div>
                   )}
                   
-                  {/* Server Stats */}
+                  {/* Server Stats - Enhanced */}
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-medium">Server Statistics</h4>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={handleResetStats}
-                        className="text-xs"
-                      >
-                        Reset
-                      </Button>
-                    </div>
-                    <div className="space-y-1 max-h-48 overflow-y-auto">
-                      {Object.entries(getServerStats()).map(([id, stats]) => {
-                        const server = servers.find(s => s.id === id);
-                        if (!server) return null;
-                        const total = stats.successCount + stats.failCount;
-                        const rate = total > 0 ? Math.round((stats.successCount / total) * 100) : 0;
+                    <h4 className="text-sm font-medium flex items-center gap-2">
+                      <BarChart3 className="w-4 h-4" />
+                      Servers - Sorted by Reliability
+                    </h4>
+                    <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                      {getEnhancedServerList().map((server, index) => {
+                        const hasStats = server.total > 0;
+                        const isGood = server.successRate !== null && server.successRate > 0.7;
+                        const isMedium = server.successRate !== null && server.successRate > 0.4 && server.successRate <= 0.7;
+                        const isPoor = server.successRate !== null && server.successRate <= 0.4;
+                        
                         return (
                           <div 
-                            key={id}
-                            className="flex items-center justify-between text-xs p-2 bg-muted/50 rounded"
+                            key={server.id}
+                            className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border border-border/50 hover:border-border transition-colors"
                           >
-                            <span>{server.name}</span>
-                            <span className={rate > 70 ? 'text-green-500' : rate > 40 ? 'text-yellow-500' : 'text-red-500'}>
-                              {rate}% ({stats.successCount}/{total})
-                            </span>
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              {/* Rank Badge */}
+                              <div className={`relative flex items-center justify-center w-6 h-6 rounded-full shrink-0 ${
+                                index === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
+                                index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500' :
+                                index === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
+                                'bg-muted'
+                              }`}>
+                                {index === 0 && <Crown className="w-3.5 h-3.5 text-yellow-900" />}
+                                {index === 1 && <Medal className="w-3.5 h-3.5 text-gray-700" />}
+                                {index === 2 && <Award className="w-3.5 h-3.5 text-orange-900" />}
+                                {index > 2 && <span className="text-[10px] font-bold text-muted-foreground">{index + 1}</span>}
+                              </div>
+                              
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-foreground truncate">
+                                  {server.name}
+                                </p>
+                                <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] text-muted-foreground">
+                                  <span className="flex items-center gap-0.5">
+                                    <Wifi className="w-2.5 h-2.5" />
+                                    {server.url}
+                                  </span>
+                                  {hasStats && (
+                                    <>
+                                      <span className="text-border">|</span>
+                                      <span className="flex items-center gap-0.5 text-green-500">
+                                        <CheckCircle2 className="w-2.5 h-2.5" />
+                                        {server.successCount}
+                                      </span>
+                                      <span className="flex items-center gap-0.5 text-red-500">
+                                        <XCircle className="w-2.5 h-2.5" />
+                                        {server.failCount}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex flex-col items-end gap-0.5 shrink-0 ml-2">
+                              {hasStats ? (
+                                <>
+                                  <div className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-0.5 ${
+                                    isGood ? 'bg-green-500/20 text-green-500' :
+                                    isMedium ? 'bg-yellow-500/20 text-yellow-500' :
+                                    'bg-red-500/20 text-red-500'
+                                  }`}>
+                                    {isGood && <TrendingUp className="w-2.5 h-2.5" />}
+                                    {isMedium && <BarChart3 className="w-2.5 h-2.5" />}
+                                    {isPoor && <TrendingDown className="w-2.5 h-2.5" />}
+                                    {Math.round((server.successRate ?? 0) * 100)}%
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    {server.avgLoadTime && (
+                                      <span className="text-[9px] text-muted-foreground flex items-center gap-0.5 bg-muted/50 px-1 py-0.5 rounded">
+                                        <Clock className="w-2 h-2" />
+                                        {(server.avgLoadTime / 1000).toFixed(1)}s
+                                      </span>
+                                    )}
+                                    {server.lastUsed && (
+                                      <span className="text-[9px] text-muted-foreground bg-muted/50 px-1 py-0.5 rounded">
+                                        {Date.now() - server.lastUsed < 3600000 ? (
+                                          <span className="text-green-500">Active</span>
+                                        ) : (
+                                          <span>{Math.floor((Date.now() - server.lastUsed) / 3600000)}h ago</span>
+                                        )}
+                                      </span>
+                                    )}
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="flex items-center gap-1 bg-blue-500/20 text-blue-500 px-1.5 py-0.5 rounded-full">
+                                  <AlertTriangle className="w-2.5 h-2.5" />
+                                  <span className="text-[10px] font-medium">Untested</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         );
                       })}
                     </div>
                   </div>
                   
-                  {/* Default Servers Info */}
-                  <div className="text-xs text-muted-foreground">
-                    <p>{DEFAULT_SERVERS.length} default servers available</p>
-                    <p>Servers are sorted by success rate</p>
+                  {/* Legend */}
+                  <div className="pt-2 border-t border-border space-y-1">
+                    <div className="flex items-center justify-center gap-3 text-[10px]">
+                      <span className="flex items-center gap-1 text-green-500">
+                        <TrendingUp className="w-2.5 h-2.5" /> {'>'}70% Good
+                      </span>
+                      <span className="flex items-center gap-1 text-yellow-500">
+                        <BarChart3 className="w-2.5 h-2.5" /> 40-70% Medium
+                      </span>
+                      <span className="flex items-center gap-1 text-red-500">
+                        <TrendingDown className="w-2.5 h-2.5" /> {'<'}40% Poor
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground text-center">
+                      {DEFAULT_SERVERS.length} servers | Auto-sorted by reliability
+                    </p>
                   </div>
                 </div>
               </DialogContent>
