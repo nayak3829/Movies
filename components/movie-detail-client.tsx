@@ -75,23 +75,24 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
       )}
 
       {/* Hero Section */}
-      <div className="relative h-[70vh] md:h-[80vh]">
+      <div className="relative h-[60vh] sm:h-[70vh] md:h-[80vh]">
         <div className="absolute inset-0">
           <Image
             src={getImageUrl(movie.backdrop_path, 'original')}
             alt={movie.title}
             fill
-            className="object-cover"
+            className="object-cover object-top sm:object-center"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-background/20 md:via-background/60 md:to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-transparent to-transparent h-24" />
         </div>
 
-        <div className="relative h-full container mx-auto px-4 flex items-end pb-16 md:pb-24">
-          <div className="flex flex-col md:flex-row gap-8 items-start">
-            {/* Poster */}
-            <div className="hidden md:block relative w-64 aspect-[2/3] rounded-lg overflow-hidden shadow-2xl flex-shrink-0">
+        <div className="relative h-full container mx-auto px-4 flex items-end pb-8 sm:pb-12 md:pb-20">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-start w-full">
+            {/* Poster - Hidden on mobile */}
+            <div className="hidden md:block relative w-48 lg:w-64 aspect-[2/3] rounded-lg overflow-hidden shadow-2xl flex-shrink-0 border border-white/10">
               <Image
                 src={getImageUrl(movie.poster_path, 'w500')}
                 alt={movie.title}
@@ -101,67 +102,67 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
             </div>
 
             {/* Info */}
-            <div className="max-w-2xl">
+            <div className="max-w-xl md:max-w-2xl">
               <h1 
-                className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
-                style={{ fontFamily: 'var(--font-bebas)', letterSpacing: '0.05em' }}
+                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 md:mb-3 leading-tight"
+                style={{ fontFamily: 'var(--font-bebas)', letterSpacing: '0.03em' }}
               >
                 {movie.title}
               </h1>
               
               {movie.tagline && (
-                <p className="text-lg text-muted-foreground italic mb-4">{movie.tagline}</p>
+                <p className="text-sm md:text-base lg:text-lg text-white/60 italic mb-2 md:mb-3">{movie.tagline}</p>
               )}
 
-              <div className="flex flex-wrap items-center gap-4 mb-6 text-sm">
-                <div className="flex items-center gap-1">
-                  <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+              <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-3 md:mb-4 text-xs md:text-sm">
+                <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-full">
+                  <Star className="w-3 h-3 md:w-4 md:h-4 text-yellow-500 fill-yellow-500" />
                   <span className="font-semibold">{movie.vote_average.toFixed(1)}</span>
                 </div>
-                <span>{movie.release_date?.split('-')[0]}</span>
+                <span className="bg-black/40 backdrop-blur-sm px-2 py-1 rounded-full">{movie.release_date?.split('-')[0]}</span>
                 {movie.runtime > 0 && (
-                  <span>{Math.floor(movie.runtime / 60)}h {movie.runtime % 60}m</span>
+                  <span className="bg-black/40 backdrop-blur-sm px-2 py-1 rounded-full">{Math.floor(movie.runtime / 60)}h {movie.runtime % 60}m</span>
                 )}
-                <span className="px-2 py-0.5 border border-muted-foreground rounded text-xs">
+                <span className="px-2 py-1 border border-white/30 rounded text-[10px] md:text-xs bg-black/40 backdrop-blur-sm">
                   HD
                 </span>
               </div>
 
-              <div className="flex flex-wrap gap-2 mb-6">
-                {movie.genres.map((genre) => (
+              <div className="flex flex-wrap gap-1.5 md:gap-2 mb-3 md:mb-4">
+                {movie.genres.slice(0, 4).map((genre) => (
                   <span
                     key={genre.id}
-                    className="px-3 py-1 bg-secondary rounded-full text-sm"
+                    className="px-2 md:px-3 py-0.5 md:py-1 bg-white/10 backdrop-blur-sm rounded-full text-xs md:text-sm border border-white/10"
                   >
                     {genre.name}
                   </span>
                 ))}
               </div>
 
-              <p className="text-muted-foreground mb-8 line-clamp-4 leading-relaxed">
+              <p className="text-xs sm:text-sm md:text-base text-white/70 mb-4 md:mb-6 line-clamp-2 sm:line-clamp-3 md:line-clamp-4 leading-relaxed">
                 {movie.overview}
               </p>
 
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex flex-wrap items-center gap-2 md:gap-3">
                 <Button 
-                  size="lg" 
-                  className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25"
+                  size="default"
+                  className="gap-1.5 md:gap-2 bg-white text-black hover:bg-white/90 font-semibold shadow-lg text-xs sm:text-sm md:text-base px-4 md:px-6"
                   onClick={() => setShowPlayer(true)}
                 >
-                  <Play className="w-5 h-5 fill-current" />
-                  Watch Now
+                  <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" />
+                  Play
                 </Button>
                 <Button 
-                  size="lg" 
+                  size="default"
                   variant="secondary" 
-                  className="gap-2"
+                  className="gap-1.5 md:gap-2 bg-white/20 hover:bg-white/30 border-0 font-semibold text-xs sm:text-sm md:text-base px-4 md:px-6"
                   onClick={toggleMyList}
                 >
-                  {inMyList ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                  {inMyList ? 'In My List' : 'My List'}
+                  {inMyList ? <Check className="w-4 h-4 md:w-5 md:h-5" /> : <Plus className="w-4 h-4 md:w-5 md:h-5" />}
+                  {inMyList ? 'Added' : 'My List'}
                 </Button>
-                <Button size="icon" variant="outline" className="rounded-full">
-                  <Share2 className="w-5 h-5" />
+                <Button size="icon" variant="outline" className="rounded-full w-9 h-9 md:w-10 md:h-10 bg-white/10 border-white/20 hover:bg-white/20">
+                  <Share2 className="w-4 h-4 md:w-5 md:h-5" />
                 </Button>
               </div>
             </div>
@@ -171,12 +172,12 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
 
       {/* Cast Section */}
       {movie.credits?.cast && movie.credits.cast.length > 0 && (
-        <section className="container mx-auto px-4 py-12">
-          <h2 className="text-2xl font-semibold mb-6">Cast</h2>
-          <div className="flex gap-4 overflow-x-auto pb-4" style={{ scrollbarWidth: 'none' }}>
-            {movie.credits.cast.slice(0, 10).map((actor) => (
-              <div key={actor.id} className="flex-shrink-0 w-32">
-                <div className="relative w-32 h-32 rounded-full overflow-hidden mb-2 bg-secondary">
+        <section className="container mx-auto px-4 py-6 md:py-12">
+          <h2 className="text-lg md:text-2xl font-semibold mb-4 md:mb-6">Cast</h2>
+          <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+            {movie.credits.cast.slice(0, 12).map((actor) => (
+              <div key={actor.id} className="flex-shrink-0 w-20 sm:w-24 md:w-32">
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 rounded-full overflow-hidden mb-2 bg-muted border-2 border-white/10">
                   {actor.profile_path ? (
                     <Image
                       src={getImageUrl(actor.profile_path, 'w200')}
@@ -185,13 +186,13 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
                       className="object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-3xl text-muted-foreground">
+                    <div className="w-full h-full flex items-center justify-center text-xl md:text-3xl text-muted-foreground bg-gradient-to-br from-muted to-muted/50">
                       {actor.name[0]}
                     </div>
                   )}
                 </div>
-                <h3 className="font-medium text-sm text-center truncate">{actor.name}</h3>
-                <p className="text-xs text-muted-foreground text-center truncate">{actor.character}</p>
+                <h3 className="font-medium text-xs md:text-sm text-center truncate">{actor.name}</h3>
+                <p className="text-[10px] md:text-xs text-muted-foreground text-center truncate">{actor.character}</p>
               </div>
             ))}
           </div>

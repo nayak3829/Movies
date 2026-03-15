@@ -38,75 +38,71 @@ export function HeroBanner({ movies }: HeroBannerProps) {
   const mediaType = currentMovie.media_type || (currentMovie.first_air_date ? 'tv' : 'movie');
 
   return (
-    <div className="relative h-[60vh] sm:h-[70vh] md:h-[85vh] w-full overflow-hidden">
+    <div className="relative h-[55vh] sm:h-[65vh] md:h-[80vh] lg:h-[85vh] w-full overflow-hidden">
       {/* Background Image with Parallax Effect */}
       <div className="absolute inset-0">
         <div 
           className={cn(
             "absolute inset-0 transition-all duration-700",
-            isTransitioning ? "opacity-0 scale-110" : "opacity-100 scale-100"
+            isTransitioning ? "opacity-0 scale-105" : "opacity-100 scale-100"
           )}
         >
           <Image
             src={getImageUrl(currentMovie.backdrop_path, 'original')}
             alt={title}
             fill
-            className="object-cover"
+            className="object-cover object-top sm:object-center"
             priority
           />
         </div>
-        {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-        
-        {/* Animated Particles */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-primary/30 rounded-full animate-pulse" />
-          <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-primary/20 rounded-full animate-ping" style={{ animationDelay: '0.5s' }} />
-          <div className="absolute bottom-1/3 left-1/2 w-1.5 h-1.5 bg-primary/25 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
-        </div>
+        {/* Gradient Overlays - Enhanced for better readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent md:via-background/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-transparent to-transparent h-32" />
       </div>
 
       {/* Content */}
-      <div className="relative h-full container mx-auto px-4 flex items-end pb-16 sm:pb-24 md:pb-32">
+      <div className="relative h-full container mx-auto px-4 flex items-end pb-20 sm:pb-28 md:pb-36 lg:pb-40">
         <div 
           className={cn(
-            "max-w-2xl transition-all duration-500",
+            "max-w-xl md:max-w-2xl transition-all duration-500",
             isTransitioning ? "opacity-0 translate-y-8" : "opacity-100 translate-y-0"
           )}
         >
           {/* Rating Badge */}
-          <div className="flex items-center gap-2 mb-3 md:mb-4">
-            <div className="flex items-center gap-1 bg-primary/20 backdrop-blur-sm px-2 md:px-3 py-1 rounded-full">
-              <Star className="w-3 h-3 md:w-4 md:h-4 text-yellow-500 fill-yellow-500" />
-              <span className="text-xs md:text-sm font-semibold">{currentMovie.vote_average.toFixed(1)}</span>
+          <div className="flex flex-wrap items-center gap-2 mb-2 md:mb-3">
+            <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-full border border-white/10">
+              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+              <span className="text-xs font-semibold">{currentMovie.vote_average.toFixed(1)}</span>
             </div>
-            <span className="text-xs text-muted-foreground bg-secondary/50 backdrop-blur-sm px-2 md:px-3 py-1 rounded-full">
+            <span className="text-xs text-white/80 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-full border border-white/10">
               {currentMovie.release_date?.split('-')[0] || currentMovie.first_air_date?.split('-')[0]}
+            </span>
+            <span className="text-xs text-white/80 bg-black/40 backdrop-blur-sm px-2 py-1 rounded-full border border-white/10 uppercase">
+              {mediaType === 'tv' ? 'TV Series' : 'Movie'}
             </span>
           </div>
 
           <h1 
-            className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-3 md:mb-4 text-balance animate-in slide-in-from-bottom-4 duration-700"
-            style={{ fontFamily: 'var(--font-bebas)', letterSpacing: '0.05em' }}
+            className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-2 md:mb-3 text-balance leading-tight"
+            style={{ fontFamily: 'var(--font-bebas)', letterSpacing: '0.03em' }}
           >
             {title}
           </h1>
           
-          <p className="text-xs sm:text-sm md:text-base text-muted-foreground mb-4 md:mb-6 line-clamp-2 md:line-clamp-3 leading-relaxed">
+          <p className="text-xs sm:text-sm md:text-base text-white/70 mb-4 md:mb-5 line-clamp-2 sm:line-clamp-3 leading-relaxed max-w-lg">
             {currentMovie.overview}
           </p>
 
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link href={`/${mediaType}/${currentMovie.id}`}>
-              <Button size="default" className="gap-1.5 sm:gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 hover:scale-105 text-sm sm:text-base md:px-6 md:py-3">
+              <Button size="default" className="gap-1.5 sm:gap-2 bg-white text-black hover:bg-white/90 font-semibold shadow-lg transition-all hover:shadow-xl hover:scale-105 text-xs sm:text-sm md:text-base px-4 sm:px-5 md:px-6 py-2 md:py-2.5">
                 <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
-                <span className="hidden xs:inline">Watch Now</span>
-                <span className="xs:hidden">Play</span>
+                Play
               </Button>
             </Link>
             <Link href={`/${mediaType}/${currentMovie.id}`}>
-              <Button size="default" variant="secondary" className="gap-1.5 sm:gap-2 backdrop-blur-sm hover:scale-105 transition-transform text-sm sm:text-base md:px-6 md:py-3">
+              <Button size="default" variant="secondary" className="gap-1.5 sm:gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm border-0 font-semibold hover:scale-105 transition-all text-xs sm:text-sm md:text-base px-4 sm:px-5 md:px-6 py-2 md:py-2.5">
                 <Info className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span className="hidden sm:inline">More Info</span>
                 <span className="sm:hidden">Info</span>
@@ -115,25 +111,27 @@ export function HeroBanner({ movies }: HeroBannerProps) {
           </div>
         </div>
 
-        {/* Mute Button */}
+        {/* Mute Button - Hidden on mobile */}
         <button
           onClick={() => setIsMuted(!isMuted)}
-          className="absolute right-4 bottom-24 md:right-12 p-3 rounded-full border border-muted-foreground/50 hover:bg-secondary transition-colors"
+          className="hidden sm:flex absolute right-4 bottom-28 md:right-8 lg:right-12 md:bottom-36 p-2.5 rounded-full border border-white/30 bg-black/30 backdrop-blur-sm hover:bg-white/20 transition-all"
           aria-label={isMuted ? 'Unmute' : 'Mute'}
         >
-          {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+          {isMuted ? <VolumeX className="w-4 h-4 md:w-5 md:h-5" /> : <Volume2 className="w-4 h-4 md:w-5 md:h-5" />}
         </button>
       </div>
 
       {/* Slide Indicators */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
+      <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 sm:gap-2">
         {movies.slice(0, 5).map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentIndex(index)}
             className={cn(
-              'w-2 h-2 rounded-full transition-all',
-              index === currentIndex ? 'w-6 bg-primary' : 'bg-muted-foreground/50 hover:bg-muted-foreground'
+              'h-1 sm:h-1.5 rounded-full transition-all duration-300',
+              index === currentIndex 
+                ? 'w-6 sm:w-8 bg-white' 
+                : 'w-1.5 sm:w-2 bg-white/40 hover:bg-white/60'
             )}
             aria-label={`Go to slide ${index + 1}`}
           />

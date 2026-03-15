@@ -356,10 +356,10 @@ export function Navbar() {
         {/* Mobile Menu */}
         <div className={cn(
           'md:hidden overflow-hidden transition-all duration-300 ease-out',
-          isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          isMobileMenuOpen ? 'max-h-[80vh] opacity-100' : 'max-h-0 opacity-0'
         )}>
           <div className="bg-background/98 backdrop-blur-xl border-t border-border">
-            <div className="container mx-auto px-4 py-4 space-y-1">
+            <div className="container mx-auto px-4 py-3 space-y-0.5">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (

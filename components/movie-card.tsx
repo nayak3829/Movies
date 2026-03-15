@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Play, Plus, ThumbsUp, ChevronDown } from 'lucide-react';
+import { Play, Plus, ThumbsUp, ChevronDown, Star } from 'lucide-react';
 import { Movie, getImageUrl } from '@/lib/tmdb';
 import { cn } from '@/lib/utils';
 
@@ -16,11 +16,13 @@ export function MovieCard({ movie, index }: MovieCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   
   const title = movie.title || movie.name || 'Unknown';
   const year = movie.release_date?.split('-')[0] || movie.first_air_date?.split('-')[0];
   const mediaType = movie.media_type || (movie.first_air_date ? 'tv' : 'movie');
+  const rating = movie.vote_average?.toFixed(1);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -38,8 +40,8 @@ export function MovieCard({ movie, index }: MovieCardProps) {
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
     
-    const rotateX = (y - centerY) / 10;
-    const rotateY = (centerX - x) / 10;
+    const rotateX = (y - centerY) / 12;
+    const rotateY = (centerX - x) / 12;
     
     setRotation({ x: rotateX, y: rotateY });
   };
@@ -58,7 +60,7 @@ export function MovieCard({ movie, index }: MovieCardProps) {
       <div
         ref={cardRef}
         className={cn(
-          'relative group cursor-pointer transition-all duration-300',
+          'relative cursor-pointer transition-all duration-300',
           isHovered && 'z-10'
         )}
         style={{ perspective: '1000px' }}
@@ -69,40 +71,61 @@ export function MovieCard({ movie, index }: MovieCardProps) {
         {/* Card */}
         <div
           className={cn(
-            'relative aspect-[2/3] rounded-lg overflow-hidden transition-all duration-300',
+            'relative aspect-[2/3] rounded-md sm:rounded-lg overflow-hidden transition-all duration-300',
             isHovered && 'shadow-2xl shadow-primary/30'
           )}
           style={{
             transform: isHovered 
-              ? `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale(1.08)`
+              ? `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale(1.05)`
               : 'rotateX(0) rotateY(0) scale(1)',
             transformStyle: 'preserve-3d',
           }}
         >
+          {/* Skeleton loader */}
+          {!imageLoaded && (
+            <div className="absolute inset-0 bg-muted animate-pulse" />
+          )}
+          
           <Image
             src={getImageUrl(movie.poster_path, 'w500')}
             alt={title}
             fill
-            className="object-cover"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
+            className={cn(
+              "object-cover transition-opacity duration-300",
+              imageLoaded ? "opacity-100" : "opacity-0"
+            )}
+            sizes="(max-width: 640px) 40vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
+            onLoad={() => setImageLoaded(true)}
           />
           
-          {/* Rank Badge */}
+          {/* Rank Badge - Netflix style */}
           {typeof index === 'number' && index < 10 && (
-            <div className="absolute bottom-0 left-0 p-2">
+            <div className="absolute -left-1 sm:-left-2 bottom-0">
               <span 
-                className="text-6xl font-bold text-foreground/30"
-                style={{ fontFamily: 'var(--font-bebas)', WebkitTextStroke: '2px rgba(255,255,255,0.3)' }}
+                className="text-5xl sm:text-6xl md:text-7xl font-bold text-transparent drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]"
+                style={{ 
+                  fontFamily: 'var(--font-bebas)', 
+                  WebkitTextStroke: '2px rgba(128,128,128,0.8)',
+                }}
               >
                 {index + 1}
               </span>
             </div>
           )}
 
+          {/* Rating Badge - Mobile visible */}
+          <div className={cn(
+            "absolute top-1.5 right-1.5 sm:top-2 sm:right-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-black/70 backdrop-blur-sm transition-opacity",
+            isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+          )}>
+            <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500 fill-yellow-500" />
+            <span className="text-[10px] sm:text-xs font-medium">{rating}</span>
+          </div>
+
           {/* Hover Overlay */}
           <div
             className={cn(
-              'absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-0 transition-opacity duration-300',
+              'absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 transition-opacity duration-300',
               isHovered && 'opacity-100'
             )}
           />
@@ -110,51 +133,64 @@ export function MovieCard({ movie, index }: MovieCardProps) {
           {/* 3D Shine Effect */}
           {isHovered && (
             <div 
-              className="absolute inset-0 opacity-40 pointer-events-none"
+              className="absolute inset-0 opacity-30 pointer-events-none"
               style={{
-                background: `linear-gradient(${105 + rotation.y * 2}deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%)`,
+                background: `linear-gradient(${105 + rotation.y * 2}deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%)`,
               }}
             />
           )}
+
+          {/* Mobile Title Overlay */}
+          {isMobile && (
+            <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/90 to-transparent">
+              <p className="text-[11px] font-medium truncate text-white">{title}</p>
+              <p className="text-[9px] text-gray-400">{year}</p>
+            </div>
+          )}
         </div>
         
-        {/* Glow Effect */}
-        <div 
-          className={cn(
-            'absolute inset-0 rounded-lg opacity-0 transition-opacity duration-300 pointer-events-none blur-xl -z-10',
-            isHovered && 'opacity-60'
-          )}
-          style={{
-            background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, transparent 60%)',
-            transform: 'translateY(20px) scale(0.9)',
-          }}
-        />
+        {/* Glow Effect - Desktop only */}
+        {!isMobile && (
+          <div 
+            className={cn(
+              'absolute inset-0 rounded-lg opacity-0 transition-opacity duration-300 pointer-events-none blur-xl -z-10',
+              isHovered && 'opacity-50'
+            )}
+            style={{
+              background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, transparent 60%)',
+              transform: 'translateY(20px) scale(0.9)',
+            }}
+          />
+        )}
 
-        {/* Expanded Card on Hover */}
-        {isHovered && (
-          <div className="absolute top-full left-0 right-0 bg-card rounded-b-md p-3 shadow-2xl -mt-1">
+        {/* Expanded Card on Hover - Desktop only */}
+        {isHovered && !isMobile && (
+          <div className="absolute top-full left-0 right-0 bg-card/95 backdrop-blur-sm rounded-b-lg p-3 shadow-2xl -mt-1 border-t border-border/20">
             {/* Action Buttons */}
-            <div className="flex items-center gap-2 mb-3">
-              <button className="p-2 bg-foreground rounded-full hover:bg-foreground/90 transition-colors">
-                <Play className="w-4 h-4 fill-background text-background" />
+            <div className="flex items-center gap-1.5 mb-2.5">
+              <button className="p-2 bg-white rounded-full hover:bg-white/90 transition-colors group/btn">
+                <Play className="w-4 h-4 fill-black text-black group-hover/btn:scale-110 transition-transform" />
               </button>
-              <button className="p-2 border border-muted-foreground/50 rounded-full hover:border-foreground transition-colors">
+              <button className="p-2 border border-muted-foreground/40 rounded-full hover:border-white hover:bg-white/10 transition-all">
                 <Plus className="w-4 h-4" />
               </button>
-              <button className="p-2 border border-muted-foreground/50 rounded-full hover:border-foreground transition-colors">
+              <button className="p-2 border border-muted-foreground/40 rounded-full hover:border-white hover:bg-white/10 transition-all">
                 <ThumbsUp className="w-4 h-4" />
               </button>
-              <button className="ml-auto p-2 border border-muted-foreground/50 rounded-full hover:border-foreground transition-colors">
+              <button className="ml-auto p-2 border border-muted-foreground/40 rounded-full hover:border-white hover:bg-white/10 transition-all">
                 <ChevronDown className="w-4 h-4" />
               </button>
             </div>
 
             {/* Info */}
-            <div className="flex items-center gap-2 text-xs mb-2">
-              <span className="text-primary font-semibold">
+            <div className="flex items-center gap-2 text-xs mb-1.5">
+              <span className="text-green-500 font-semibold">
                 {Math.round(movie.vote_average * 10)}% Match
               </span>
               <span className="text-muted-foreground">{year}</span>
+              <span className="px-1 py-0.5 border border-muted-foreground/50 rounded text-[10px] uppercase">
+                {mediaType === 'tv' ? 'Series' : 'HD'}
+              </span>
             </div>
 
             <h3 className="text-sm font-medium truncate">{title}</h3>

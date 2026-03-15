@@ -48,15 +48,15 @@ export default async function MoviesPage() {
     <main className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="pt-24 pb-8">
-        <div className="container mx-auto px-4 mb-8">
+      <div className="pt-20 sm:pt-24 pb-4 md:pb-8">
+        <div className="container mx-auto px-4 mb-4 md:mb-6">
           <h1 
-            className="text-4xl md:text-5xl font-bold"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold"
             style={{ fontFamily: 'var(--font-bebas)', letterSpacing: '0.05em' }}
           >
             Movies
           </h1>
-          <p className="text-muted-foreground mt-2">Discover the latest and greatest films</p>
+          <p className="text-sm md:text-base text-muted-foreground mt-1 md:mt-2">Discover the latest and greatest films</p>
         </div>
 
         {!hasContent ? (
@@ -67,8 +67,8 @@ export default async function MoviesPage() {
             </div>
           </div>
         ) : (
-          <div className="space-y-2">
-            <MovieRow title="Popular Movies" movies={popular.results} />
+          <div className="space-y-0 md:space-y-1">
+            <MovieRow title="Popular Movies" movies={popular.results} showRank />
             <MovieRow title="Now Playing" movies={nowPlaying.results} />
             <MovieRow title="Top Rated" movies={topRated.results} />
             <MovieRow title="Coming Soon" movies={upcoming.results} />

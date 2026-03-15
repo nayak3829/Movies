@@ -190,3 +190,39 @@
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
 }
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Smooth scroll for the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better touch handling for mobile */
+@media (hover: none) {
+  .group:hover .group-hover\:opacity-100 {
+    opacity: 0;
+  }
+}
+
+/* Improve tap target sizes on mobile */
+@media (max-width: 640px) {
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Netflix-style text shadow for titles */
+.text-shadow-lg {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(0, 0, 0, 0.3);
+}

@@ -92,7 +92,7 @@ export default async function HomePage() {
         <>
           <HeroBanner movies={trending.results.slice(0, 5)} />
           
-          <div className="-mt-32 relative z-10 space-y-2">
+          <div className="-mt-16 sm:-mt-24 md:-mt-32 relative z-10 space-y-0 md:space-y-1">
             <MovieRow 
               title="Trending Now" 
               movies={trending.results} 

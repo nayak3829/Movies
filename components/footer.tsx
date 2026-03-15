@@ -85,18 +85,18 @@ export function Footer() {
   ];
 
   return (
-    <footer className="bg-card/50 border-t border-border mt-16">
-      <div className="container mx-auto px-4 py-12">
+    <footer className="bg-gradient-to-t from-black to-card/30 border-t border-border/50 mt-8 md:mt-16">
+      <div className="container mx-auto px-4 py-8 md:py-12">
         {/* Logo */}
-        <div className="mb-8">
-          <span className="text-2xl font-bold tracking-wider" style={{ fontFamily: 'var(--font-bebas)' }}>
+        <div className="mb-6 md:mb-8 text-center sm:text-left">
+          <span className="text-xl md:text-2xl font-bold tracking-wider" style={{ fontFamily: 'var(--font-bebas)' }}>
             <span className="text-foreground">TECH</span><span className="text-primary">VYRO</span>
           </span>
-          <p className="text-sm text-muted-foreground mt-2">Your ultimate entertainment destination</p>
+          <p className="text-xs md:text-sm text-muted-foreground mt-1">Your ultimate entertainment destination</p>
         </div>
 
         {/* Social Links with Animations */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-8">
+        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-6 md:mb-8">
           {socialIcons.map((social, index) => {
             const Icon = social.icon;
             return (
@@ -106,7 +106,7 @@ export function Footer() {
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className={`
-                  relative p-2.5 sm:p-3 rounded-full bg-muted/50 border border-border
+                  relative p-2 sm:p-2.5 rounded-full bg-muted/30 border border-border/50
                   transition-all duration-300 ease-out
                   ${social.color} ${social.bgColor} ${social.animation}
                   group overflow-hidden
@@ -114,25 +114,24 @@ export function Footer() {
                 aria-label={social.label}
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                {/* Glow effect */}
                 <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl bg-current" />
-                <Icon className="w-4 h-4 sm:w-5 sm:h-5 relative z-10" />
+                <Icon className="w-4 h-4 relative z-10" />
               </a>
             );
           })}
         </div>
 
-        {/* Footer Links */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+        {/* Footer Links - Responsive grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 md:gap-8 mb-6 md:mb-8">
           {footerLinks.map((section) => (
             <div key={section.title}>
-              <h3 className="font-semibold mb-4">{section.title}</h3>
-              <ul className="space-y-2">
+              <h3 className="font-semibold text-sm md:text-base mb-3 md:mb-4">{section.title}</h3>
+              <ul className="space-y-1.5 md:space-y-2">
                 {section.links.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      className="text-xs md:text-sm text-muted-foreground hover:text-foreground transition-colors inline-block"
                     >
                       {link.label}
                     </Link>
@@ -144,8 +143,8 @@ export function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="pt-8 border-t border-border">
-          <p className="text-sm text-muted-foreground">
+        <div className="pt-6 md:pt-8 border-t border-border/50 text-center sm:text-left">
+          <p className="text-[11px] md:text-sm text-muted-foreground">
             © 2026 TechVyro. All rights reserved. Powered by TMDB API.
           </p>
         </div>
