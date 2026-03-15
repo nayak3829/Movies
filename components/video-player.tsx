@@ -26,6 +26,7 @@ import { Label } from '@/components/ui/label';
 import {
   StreamingServer,
   getAllServers,
+  getServersForAutoFetch,
   getEmbedUrl,
   addCustomServer,
   removeCustomServer,
@@ -68,7 +69,7 @@ export function VideoPlayer({
   const [isLoading, setIsLoading] = useState(true);
   const [isAutoFetching, setIsAutoFetching] = useState(true);
   const [serverStatuses, setServerStatuses] = useState<Record<string, ServerStatus>>({});
-  const [statusMessage, setStatusMessage] = useState('Auto-detecting best server...');
+  const [statusMessage, setStatusMessage] = useState('Finding best live server...');
   const [showSettings, setShowSettings] = useState(false);
   const [showAddServer, setShowAddServer] = useState(false);
   const [loadStartTime, setLoadStartTime] = useState<number>(0);
@@ -82,14 +83,17 @@ export function VideoPlayer({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const triedServersRef = useRef<Set<number>>(new Set());
 
-  // Load servers on mount
+  // Load servers on mount - use smart auto-fetch sorting
   useEffect(() => {
-    const loadedServers = getAllServers();
+    const loadedServers = getServersForAutoFetch();
     // If no IMDB ID, filter out the all-servers option
     const filteredServers = imdbId 
       ? loadedServers 
       : loadedServers.filter(s => s.id !== 'all-servers');
     setServers(filteredServers);
+    
+    // Log server order for debugging
+    console.log('[v0] Server order for auto-fetch:', filteredServers.map(s => s.name).slice(0, 5));
   }, [imdbId]);
 
   // Block popup windows from streaming servers
@@ -134,15 +138,28 @@ export function VideoPlayer({
         setServerStatuses(prev => ({ ...prev, [currentId]: 'failed' }));
         updateServerStats(currentId, false);
       }
-      setStatusMessage(`${servers[currentServerIndex]?.name} failed. Trying ${servers[nextIndex]?.name}...`);
+      
+      // Show more informative message
+      const nextServer = servers[nextIndex];
+      const stats = getServerStats()[nextServer?.id];
+      const hasGoodStats = stats && stats.successCount > stats.failCount;
+      
+      setStatusMessage(
+        hasGoodStats 
+          ? `Trying ${nextServer?.name} (reliable)...`
+          : `Trying ${nextServer?.name}...`
+      );
+      
       triedServersRef.current.add(currentServerIndex);
       setCurrentServerIndex(nextIndex);
       setIsLoading(true);
       setLoadStartTime(Date.now());
+      
+      console.log('[v0] Switching to server:', nextServer?.name);
     } else {
       setIsAutoFetching(false);
       setIsLoading(false);
-      setStatusMessage('All servers tried. Select manually or retry.');
+      setStatusMessage('All servers tried. Tap to retry or select manually.');
     }
   }, [currentServerIndex, servers]);
 
@@ -156,8 +173,8 @@ export function VideoPlayer({
   };
 
   const handleRetryAutoFetch = () => {
-    // Reload servers with updated stats
-    const loadedServers = getAllServers();
+    // Reload servers with smart sorting based on stats
+    const loadedServers = getServersForAutoFetch();
     const filteredServers = imdbId 
       ? loadedServers 
       : loadedServers.filter(s => s.id !== 'all-servers');
@@ -168,7 +185,9 @@ export function VideoPlayer({
     setLoadStartTime(Date.now());
     triedServersRef.current.clear();
     setServerStatuses({});
-    setStatusMessage('Auto-detecting best server...');
+    setStatusMessage('Finding best live server...');
+    
+    console.log('[v0] Retrying with server order:', filteredServers.map(s => s.name).slice(0, 5));
   };
 
   const handleNextEpisode = () => {
@@ -229,7 +248,7 @@ export function VideoPlayer({
     setServers(filteredServers);
   };
 
-  // Auto-fetch logic with timeout
+  // Auto-fetch logic with smart timeout
   useEffect(() => {
     if (!isAutoFetching || servers.length === 0) return;
 
@@ -238,17 +257,29 @@ export function VideoPlayer({
     }
 
     const currentId = servers[currentServerIndex]?.id;
+    const stats = getServerStats()[currentId];
+    
     if (currentId) {
       setServerStatuses(prev => ({ ...prev, [currentId]: 'loading' }));
     }
-    setStatusMessage(`Trying ${servers[currentServerIndex]?.name}...`);
+    
+    // Show server reliability info
+    const hasGoodStats = stats && stats.successCount > stats.failCount;
+    setStatusMessage(
+      hasGoodStats 
+        ? `Trying ${servers[currentServerIndex]?.name} (reliable)...`
+        : `Trying ${servers[currentServerIndex]?.name}...`
+    );
 
-    // Set a 6-second timeout to try next server
+    // Dynamic timeout: 4s for unknown servers, 6s for servers with good history
+    const timeout = hasGoodStats ? 6000 : 4000;
+    
     timeoutRef.current = setTimeout(() => {
       if (isLoading && isAutoFetching) {
+        console.log('[v0] Server timeout:', servers[currentServerIndex]?.name);
         tryNextServer();
       }
-    }, 6000);
+    }, timeout);
 
     return () => {
       if (timeoutRef.current) {
@@ -268,6 +299,7 @@ export function VideoPlayer({
     if (currentId) {
       setServerStatuses(prev => ({ ...prev, [currentId]: 'success' }));
       updateServerStats(currentId, true, loadTime);
+      console.log('[v0] Server loaded successfully:', currentServer?.name, 'in', loadTime, 'ms');
     }
     
     setIsLoading(false);
@@ -307,48 +339,48 @@ export function VideoPlayer({
   return (
     <div className="fixed inset-0 z-50 bg-black">
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black via-black/80 to-transparent p-4 pb-8">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-4">
+      <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black via-black/80 to-transparent p-3 sm:p-4 pb-6 sm:pb-8">
+        <div className="flex items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
             <Button
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="text-white hover:bg-white/20 shrink-0"
+              className="text-white hover:bg-white/20 shrink-0 h-8 w-8 sm:h-10 sm:w-10"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5 sm:w-6 sm:h-6" />
             </Button>
-            <div className="min-w-0">
-              <h2 className="text-white font-semibold text-lg truncate">{title}</h2>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-white font-semibold text-sm sm:text-lg truncate max-w-[150px] sm:max-w-none">{title}</h2>
               {type === 'tv' && (
-                <p className="text-white/70 text-sm">
+                <p className="text-white/70 text-xs sm:text-sm">
                   S{currentSeason} E{currentEpisode}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Episode Navigation for TV */}
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            {/* Episode Navigation for TV - Hidden on very small screens */}
             {type === 'tv' && (
-              <div className="flex items-center gap-1">
+              <div className="hidden xs:flex items-center gap-1">
                 <Button
                   variant="secondary"
                   size="icon"
                   onClick={handlePrevEpisode}
                   disabled={!hasPrevEpisode}
-                  className="h-9 w-9"
+                  className="h-7 w-7 sm:h-9 sm:w-9"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
                 <Button
                   variant="secondary"
                   size="icon"
                   onClick={handleNextEpisode}
                   disabled={!hasNextEpisode}
-                  className="h-9 w-9"
+                  className="h-7 w-7 sm:h-9 sm:w-9"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
               </div>
             )}
@@ -356,31 +388,47 @@ export function VideoPlayer({
             {/* Server Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="secondary" className="gap-2">
-                  <Server className="w-4 h-4" />
-                  <span className="max-w-[100px] truncate">{currentServer?.name}</span>
+                <Button variant="secondary" className="gap-1 sm:gap-2 h-7 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm">
+                  <Server className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="max-w-[60px] sm:max-w-[100px] truncate hidden xs:inline">{currentServer?.name}</span>
                   {getServerStatusIcon(currentServer?.id || '')}
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto w-56">
                 <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                  Servers ({servers.length})
+                  Servers ({servers.length}) - Sorted by reliability
                 </div>
-                {servers.map((s, index) => (
-                  <DropdownMenuItem
-                    key={s.id}
-                    onClick={() => handleServerChange(index)}
-                    className={`flex items-center justify-between ${currentServerIndex === index ? 'bg-primary/20' : ''}`}
-                  >
-                    <span className="flex items-center gap-2">
-                      {s.isCustom && <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1 rounded">Custom</span>}
-                      {s.id === 'all-servers' && <span className="text-[10px] bg-green-500/20 text-green-400 px-1 rounded">Best</span>}
-                      {s.name}
-                    </span>
-                    {getServerStatusIcon(s.id)}
-                  </DropdownMenuItem>
-                ))}
+                {servers.map((s, index) => {
+                  const stats = getServerStats()[s.id];
+                  const total = stats ? stats.successCount + stats.failCount : 0;
+                  const successRate = total > 0 ? Math.round((stats.successCount / total) * 100) : null;
+                  const isReliable = stats && stats.successCount > stats.failCount;
+                  const isRecent = stats?.lastSuccess && (Date.now() - stats.lastSuccess) < (1000 * 60 * 60);
+                  
+                  return (
+                    <DropdownMenuItem
+                      key={s.id}
+                      onClick={() => handleServerChange(index)}
+                      className={`flex items-center justify-between ${currentServerIndex === index ? 'bg-primary/20' : ''}`}
+                    >
+                      <span className="flex items-center gap-2">
+                        {s.isCustom && <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1 rounded">Custom</span>}
+                        {isRecent && <span className="text-[10px] bg-green-500/20 text-green-400 px-1 rounded">Live</span>}
+                        {!isRecent && isReliable && <span className="text-[10px] bg-yellow-500/20 text-yellow-400 px-1 rounded">Good</span>}
+                        <span className="truncate max-w-[120px]">{s.name}</span>
+                      </span>
+                      <span className="flex items-center gap-1">
+                        {successRate !== null && total > 2 && (
+                          <span className={`text-[10px] ${successRate > 60 ? 'text-green-400' : successRate > 30 ? 'text-yellow-400' : 'text-red-400'}`}>
+                            {successRate}%
+                          </span>
+                        )}
+                        {getServerStatusIcon(s.id)}
+                      </span>
+                    </DropdownMenuItem>
+                  );
+                })}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleRetryAutoFetch} className="text-yellow-500">
                   <RefreshCw className="w-4 h-4 mr-2" />
@@ -393,9 +441,9 @@ export function VideoPlayer({
             {type === 'tv' && totalSeasons > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="secondary" className="gap-2">
+                  <Button variant="secondary" className="gap-1 sm:gap-2 h-7 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm">
                     S{currentSeason}
-                    <ChevronDown className="w-4 h-4" />
+                    <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="max-h-64 overflow-y-auto">
@@ -421,9 +469,9 @@ export function VideoPlayer({
             {type === 'tv' && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="secondary" className="gap-2">
+                  <Button variant="secondary" className="gap-1 sm:gap-2 h-7 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm">
                     E{currentEpisode}
-                    <ChevronDown className="w-4 h-4" />
+                    <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="max-h-64 overflow-y-auto">
@@ -447,11 +495,11 @@ export function VideoPlayer({
             {/* Settings Button */}
             <Dialog open={showSettings} onOpenChange={setShowSettings}>
               <DialogTrigger asChild>
-                <Button variant="secondary" size="icon" className="h-9 w-9">
-                  <Settings className="w-4 h-4" />
+                <Button variant="secondary" size="icon" className="h-7 w-7 sm:h-9 sm:w-9">
+                  <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+              <DialogContent className="max-w-[calc(100vw-24px)] sm:max-w-md max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Server Settings</DialogTitle>
                 </DialogHeader>
@@ -575,9 +623,9 @@ export function VideoPlayer({
 
         {/* Status Message */}
         {(isLoading || isAutoFetching) && (
-          <div className="mt-3 flex items-center gap-2 text-sm text-white/70">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            {statusMessage}
+          <div className="mt-2 sm:mt-3 flex items-center gap-2 text-xs sm:text-sm text-white/70">
+            <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin shrink-0" />
+            <span className="truncate">{statusMessage}</span>
           </div>
         )}
       </div>
@@ -585,17 +633,17 @@ export function VideoPlayer({
       {/* Loading Overlay */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/70 z-5">
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-3 sm:gap-4 px-4">
             <div className="relative">
-              <Loader2 className="w-16 h-16 text-red-600 animate-spin" />
+              <Loader2 className="w-12 h-12 sm:w-16 sm:h-16 text-red-600 animate-spin" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <Server className="w-6 h-6 text-white" />
+                <Server className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
             <div className="text-center">
-              <p className="text-white font-medium">{statusMessage}</p>
+              <p className="text-white font-medium text-sm sm:text-base">{statusMessage}</p>
               {isAutoFetching && (
-                <p className="text-white/50 text-sm mt-1">
+                <p className="text-white/50 text-xs sm:text-sm mt-1">
                   Server {currentServerIndex + 1} of {servers.length}
                 </p>
               )}
@@ -604,7 +652,7 @@ export function VideoPlayer({
               <Button 
                 variant="secondary" 
                 onClick={handleRetryAutoFetch}
-                className="gap-2"
+                className="gap-2 text-sm"
               >
                 <RefreshCw className="w-4 h-4" />
                 Try Auto-detect
@@ -618,11 +666,12 @@ export function VideoPlayer({
       {type === 'tv' && hasNextEpisode && !isLoading && (
         <Button
           variant="secondary"
-          className="absolute bottom-20 right-4 z-10 gap-2"
+          className="absolute bottom-16 sm:bottom-20 right-3 sm:right-4 z-10 gap-1.5 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 h-8 sm:h-9"
           onClick={handleNextEpisode}
         >
-          <SkipForward className="w-4 h-4" />
-          Next Episode
+          <SkipForward className="w-3 h-3 sm:w-4 sm:h-4" />
+          <span className="hidden xs:inline">Next Episode</span>
+          <span className="xs:hidden">Next</span>
         </Button>
       )}
 

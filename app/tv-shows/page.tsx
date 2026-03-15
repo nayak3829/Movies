@@ -5,6 +5,9 @@ import {
   getPopularTVShows,
   getTopRatedTVShows,
   getTrending,
+  getAiringTodayTV,
+  getOnTheAirTV,
+  getTVShowsByGenre,
   MovieResponse,
 } from '@/lib/tmdb';
 
@@ -23,10 +26,22 @@ export default async function TVShowsPage() {
     popular,
     topRated,
     trending,
+    airingToday,
+    onTheAir,
+    drama,
+    comedy,
+    sciFiFantasy,
+    crime,
   ] = await Promise.all([
     fetchSafe(() => getPopularTVShows(), emptyResponse),
     fetchSafe(() => getTopRatedTVShows(), emptyResponse),
     fetchSafe(() => getTrending('week'), emptyResponse),
+    fetchSafe(() => getAiringTodayTV(), emptyResponse),
+    fetchSafe(() => getOnTheAirTV(), emptyResponse),
+    fetchSafe(() => getTVShowsByGenre(18), emptyResponse),
+    fetchSafe(() => getTVShowsByGenre(35), emptyResponse),
+    fetchSafe(() => getTVShowsByGenre(10765), emptyResponse),
+    fetchSafe(() => getTVShowsByGenre(80), emptyResponse),
   ]);
 
   // Filter only TV shows from trending
@@ -62,8 +77,14 @@ export default async function TVShowsPage() {
         ) : (
           <div className="space-y-2">
             <MovieRow title="Trending TV Shows" movies={trendingTV.results} showRank />
+            <MovieRow title="Airing Today" movies={airingToday.results} />
             <MovieRow title="Popular TV Shows" movies={popular.results} />
+            <MovieRow title="Currently On Air" movies={onTheAir.results} />
             <MovieRow title="Top Rated TV Shows" movies={topRated.results} />
+            <MovieRow title="Drama" movies={drama.results} />
+            <MovieRow title="Comedy" movies={comedy.results} />
+            <MovieRow title="Sci-Fi & Fantasy" movies={sciFiFantasy.results} />
+            <MovieRow title="Crime" movies={crime.results} />
           </div>
         )}
       </div>

@@ -38,7 +38,7 @@ export function HeroBanner({ movies }: HeroBannerProps) {
   const mediaType = currentMovie.media_type || (currentMovie.first_air_date ? 'tv' : 'movie');
 
   return (
-    <div className="relative h-[70vh] md:h-[85vh] w-full overflow-hidden">
+    <div className="relative h-[60vh] sm:h-[70vh] md:h-[85vh] w-full overflow-hidden">
       {/* Background Image with Parallax Effect */}
       <div className="absolute inset-0">
         <div 
@@ -68,7 +68,7 @@ export function HeroBanner({ movies }: HeroBannerProps) {
       </div>
 
       {/* Content */}
-      <div className="relative h-full container mx-auto px-4 flex items-end pb-24 md:pb-32">
+      <div className="relative h-full container mx-auto px-4 flex items-end pb-16 sm:pb-24 md:pb-32">
         <div 
           className={cn(
             "max-w-2xl transition-all duration-500",
@@ -76,38 +76,40 @@ export function HeroBanner({ movies }: HeroBannerProps) {
           )}
         >
           {/* Rating Badge */}
-          <div className="flex items-center gap-2 mb-4">
-            <div className="flex items-center gap-1 bg-primary/20 backdrop-blur-sm px-3 py-1 rounded-full">
-              <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-              <span className="text-sm font-semibold">{currentMovie.vote_average.toFixed(1)}</span>
+          <div className="flex items-center gap-2 mb-3 md:mb-4">
+            <div className="flex items-center gap-1 bg-primary/20 backdrop-blur-sm px-2 md:px-3 py-1 rounded-full">
+              <Star className="w-3 h-3 md:w-4 md:h-4 text-yellow-500 fill-yellow-500" />
+              <span className="text-xs md:text-sm font-semibold">{currentMovie.vote_average.toFixed(1)}</span>
             </div>
-            <span className="text-xs text-muted-foreground bg-secondary/50 backdrop-blur-sm px-3 py-1 rounded-full">
+            <span className="text-xs text-muted-foreground bg-secondary/50 backdrop-blur-sm px-2 md:px-3 py-1 rounded-full">
               {currentMovie.release_date?.split('-')[0] || currentMovie.first_air_date?.split('-')[0]}
             </span>
           </div>
 
           <h1 
-            className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 text-balance animate-in slide-in-from-bottom-4 duration-700"
+            className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-3 md:mb-4 text-balance animate-in slide-in-from-bottom-4 duration-700"
             style={{ fontFamily: 'var(--font-bebas)', letterSpacing: '0.05em' }}
           >
             {title}
           </h1>
           
-          <p className="text-sm md:text-base text-muted-foreground mb-6 line-clamp-3 leading-relaxed">
+          <p className="text-xs sm:text-sm md:text-base text-muted-foreground mb-4 md:mb-6 line-clamp-2 md:line-clamp-3 leading-relaxed">
             {currentMovie.overview}
           </p>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Link href={`/${mediaType}/${currentMovie.id}`}>
-              <Button size="lg" className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 hover:scale-105">
-                <Play className="w-5 h-5 fill-current" />
-                Watch Now
+              <Button size="default" className="gap-1.5 sm:gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 hover:scale-105 text-sm sm:text-base md:px-6 md:py-3">
+                <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
+                <span className="hidden xs:inline">Watch Now</span>
+                <span className="xs:hidden">Play</span>
               </Button>
             </Link>
             <Link href={`/${mediaType}/${currentMovie.id}`}>
-              <Button size="lg" variant="secondary" className="gap-2 backdrop-blur-sm hover:scale-105 transition-transform">
-                <Info className="w-5 h-5" />
-                More Info
+              <Button size="default" variant="secondary" className="gap-1.5 sm:gap-2 backdrop-blur-sm hover:scale-105 transition-transform text-sm sm:text-base md:px-6 md:py-3">
+                <Info className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">More Info</span>
+                <span className="sm:hidden">Info</span>
               </Button>
             </Link>
           </div>

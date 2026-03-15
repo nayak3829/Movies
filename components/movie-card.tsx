@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Play, Plus, ThumbsUp, ChevronDown } from 'lucide-react';
@@ -15,14 +15,22 @@ interface MovieCardProps {
 export function MovieCard({ movie, index }: MovieCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  const [isMobile, setIsMobile] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   
   const title = movie.title || movie.name || 'Unknown';
   const year = movie.release_date?.split('-')[0] || movie.first_air_date?.split('-')[0];
   const mediaType = movie.media_type || (movie.first_air_date ? 'tv' : 'movie');
 
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
+    if (!cardRef.current || isMobile) return;
     
     const rect = cardRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -41,6 +49,10 @@ export function MovieCard({ movie, index }: MovieCardProps) {
     setRotation({ x: 0, y: 0 });
   };
 
+  const handleMouseEnter = () => {
+    if (!isMobile) setIsHovered(true);
+  };
+
   return (
     <Link href={`/${mediaType}/${movie.id}`}>
       <div
@@ -50,7 +62,7 @@ export function MovieCard({ movie, index }: MovieCardProps) {
           isHovered && 'z-10'
         )}
         style={{ perspective: '1000px' }}
-        onMouseEnter={() => setIsHovered(true)}
+        onMouseEnter={handleMouseEnter}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >

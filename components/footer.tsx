@@ -96,7 +96,7 @@ export function Footer() {
         </div>
 
         {/* Social Links with Animations */}
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-8">
           {socialIcons.map((social, index) => {
             const Icon = social.icon;
             return (
@@ -106,7 +106,7 @@ export function Footer() {
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className={`
-                  relative p-3 rounded-full bg-muted/50 border border-border
+                  relative p-2.5 sm:p-3 rounded-full bg-muted/50 border border-border
                   transition-all duration-300 ease-out
                   ${social.color} ${social.bgColor} ${social.animation}
                   group overflow-hidden
@@ -116,7 +116,7 @@ export function Footer() {
               >
                 {/* Glow effect */}
                 <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl bg-current" />
-                <Icon className="w-5 h-5 relative z-10" />
+                <Icon className="w-4 h-4 sm:w-5 sm:h-5 relative z-10" />
               </a>
             );
           })}

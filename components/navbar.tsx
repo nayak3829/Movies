@@ -55,6 +55,7 @@ export function Navbar() {
     { href: '/', label: 'Home' },
     { href: '/movies', label: 'Movies' },
     { href: '/tv-shows', label: 'TV Shows' },
+    { href: '/new-popular', label: 'New & Popular' },
     { href: '/my-list', label: 'My List' },
   ];
 
