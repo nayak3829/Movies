@@ -11,6 +11,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ results: [] });
   }
 
+  if (!TMDB_API_KEY) {
+    return NextResponse.json({ results: [], error: 'API key not configured' });
+  }
+
   try {
     const response = await fetch(
       `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`,
@@ -18,13 +22,12 @@ export async function GET(request: NextRequest) {
     );
 
     if (!response.ok) {
-      throw new Error('Failed to fetch from TMDB');
+      return NextResponse.json({ results: [] });
     }
 
     const data = await response.json();
     return NextResponse.json(data);
-  } catch (error) {
-    console.error('Search API error:', error);
-    return NextResponse.json({ results: [] }, { status: 500 });
+  } catch {
+    return NextResponse.json({ results: [] });
   }
 }

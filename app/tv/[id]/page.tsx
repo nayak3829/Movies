@@ -1,13 +1,15 @@
 import { notFound } from 'next/navigation';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
-import { getTVDetails, getPopularTVShows } from '@/lib/tmdb';
+import { getTVDetails, getPopularTVShows, MovieResponse } from '@/lib/tmdb';
 import { MovieRow } from '@/components/movie-row';
 import { TVDetailClient } from '@/components/tv-detail-client';
 
 interface TVPageProps {
   params: Promise<{ id: string }>;
 }
+
+const emptyResponse: MovieResponse = { page: 1, results: [], total_pages: 0, total_results: 0 };
 
 export default async function TVPage({ params }: TVPageProps) {
   const { id } = await params;
@@ -24,7 +26,12 @@ export default async function TVPage({ params }: TVPageProps) {
     notFound();
   }
 
-  const similar = await getPopularTVShows();
+  let similar = emptyResponse;
+  try {
+    similar = await getPopularTVShows();
+  } catch {
+    // Continue with empty similar shows
+  }
 
   return (
     <main className="min-h-screen bg-background">
@@ -33,9 +40,11 @@ export default async function TVPage({ params }: TVPageProps) {
       <TVDetailClient show={show} />
 
       {/* Similar Shows */}
-      <section className="py-8">
-        <MovieRow title="You Might Also Like" movies={similar.results} />
-      </section>
+      {similar.results.length > 0 && (
+        <section className="py-8">
+          <MovieRow title="You Might Also Like" movies={similar.results} />
+        </section>
+      )}
 
       <Footer />
     </main>
