@@ -328,29 +328,70 @@ export function VideoPlayer({
   };
 
   const [controlsVisible, setControlsVisible] = useState(true);
+  const [cursorVisible, setCursorVisible] = useState(true);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastMouseMoveRef = useRef<number>(Date.now());
 
-  // Auto-hide controls after 3 seconds
+  // Auto-hide controls and cursor after 3 seconds of inactivity
   const showControls = useCallback(() => {
     setControlsVisible(true);
+    setCursorVisible(true);
+    lastMouseMoveRef.current = Date.now();
+    
     if (controlsTimeoutRef.current) {
       clearTimeout(controlsTimeoutRef.current);
     }
     controlsTimeoutRef.current = setTimeout(() => {
       if (!isLoading && !showSettings) {
         setControlsVisible(false);
+        setCursorVisible(false);
       }
     }, 3000);
   }, [isLoading, showSettings]);
 
+  // Also detect mouse movement over iframe using interval
   useEffect(() => {
     showControls();
+    
+    // Interval to check for mouse activity even when over iframe
+    const checkInterval = setInterval(() => {
+      const timeSinceLastMove = Date.now() - lastMouseMoveRef.current;
+      if (timeSinceLastMove > 3000 && !isLoading && !showSettings && controlsVisible) {
+        setControlsVisible(false);
+        setCursorVisible(false);
+      }
+    }, 500);
+    
+    // Global mouse move listener to catch movements over iframe edge cases
+    const handleGlobalMouseMove = () => {
+      lastMouseMoveRef.current = Date.now();
+      if (!controlsVisible) {
+        setControlsVisible(true);
+        setCursorVisible(true);
+      }
+    };
+    
+    // Keyboard listener to show controls
+    const handleKeyPress = (e: KeyboardEvent) => {
+      showControls();
+      // ESC to close player
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    
+    window.addEventListener('mousemove', handleGlobalMouseMove);
+    window.addEventListener('keydown', handleKeyPress);
+    
     return () => {
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current);
       }
+      clearInterval(checkInterval);
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
+      window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [showControls]);
+  }, [showControls, isLoading, showSettings, controlsVisible, onClose]);
 
   if (servers.length === 0) {
     return (
@@ -367,7 +408,7 @@ export function VideoPlayer({
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-black cursor-none group"
+      className={`fixed inset-0 z-50 bg-black group ${cursorVisible ? 'cursor-default' : 'cursor-none'}`}
       onMouseMove={showControls}
       onTouchStart={showControls}
       onClick={showControls}
@@ -774,21 +815,38 @@ export function VideoPlayer({
         </div>
       )}
 
-      {/* Video iframe - no sandbox to allow streaming servers to work */}
-      <iframe
-        ref={iframeRef}
-        src={embedUrl}
-        className="w-full h-full"
-        allowFullScreen
-        allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
-        onLoad={handleIframeLoad}
-        onError={() => {
-          // If current server fails, try next one
-          if (isAutoFetching) {
-            tryNextServer();
-          }
-        }}
-      />
+      {/* Video iframe container */}
+      <div className="relative w-full h-full">
+        {/* Transparent overlay to capture mouse events when controls are hidden */}
+        {!controlsVisible && (
+          <div 
+            className="absolute inset-0 z-10"
+            onMouseMove={showControls}
+            onTouchStart={showControls}
+            onClick={(e) => {
+              showControls();
+              // Allow click through after showing controls
+              e.stopPropagation();
+            }}
+          />
+        )}
+        
+        {/* Video iframe - no sandbox to allow streaming servers to work */}
+        <iframe
+          ref={iframeRef}
+          src={embedUrl}
+          className="w-full h-full"
+          allowFullScreen
+          allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+          onLoad={handleIframeLoad}
+          onError={() => {
+            // If current server fails, try next one
+            if (isAutoFetching) {
+              tryNextServer();
+            }
+          }}
+        />
+      </div>
     </div>
   );
 }
