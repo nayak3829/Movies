@@ -10,6 +10,8 @@ import {
   getNowPlayingMovies,
   getPopularTVShows,
   getTopRatedTVShows,
+  getMoviesByGenre,
+  getTVShowsByGenre,
   MovieResponse,
 } from '@/lib/tmdb';
 
@@ -32,6 +34,16 @@ export default async function HomePage() {
     nowPlaying,
     popularTV,
     topRatedTV,
+    actionMovies,
+    comedyMovies,
+    horrorMovies,
+    sciFiMovies,
+    romanceMovies,
+    thrillerMovies,
+    animationMovies,
+    documentaries,
+    crimeTV,
+    dramaTV,
   ] = await Promise.all([
     fetchWithFallback(() => getTrending('week'), emptyResponse),
     fetchWithFallback(() => getPopularMovies(), emptyResponse),
@@ -40,6 +52,16 @@ export default async function HomePage() {
     fetchWithFallback(() => getNowPlayingMovies(), emptyResponse),
     fetchWithFallback(() => getPopularTVShows(), emptyResponse),
     fetchWithFallback(() => getTopRatedTVShows(), emptyResponse),
+    fetchWithFallback(() => getMoviesByGenre(28), emptyResponse), // Action
+    fetchWithFallback(() => getMoviesByGenre(35), emptyResponse), // Comedy
+    fetchWithFallback(() => getMoviesByGenre(27), emptyResponse), // Horror
+    fetchWithFallback(() => getMoviesByGenre(878), emptyResponse), // Sci-Fi
+    fetchWithFallback(() => getMoviesByGenre(10749), emptyResponse), // Romance
+    fetchWithFallback(() => getMoviesByGenre(53), emptyResponse), // Thriller
+    fetchWithFallback(() => getMoviesByGenre(16), emptyResponse), // Animation
+    fetchWithFallback(() => getMoviesByGenre(99), emptyResponse), // Documentary
+    fetchWithFallback(() => getTVShowsByGenre(80), emptyResponse), // Crime TV
+    fetchWithFallback(() => getTVShowsByGenre(18), emptyResponse), // Drama TV
   ]);
 
   const hasApiKey = process.env.TMDB_API_KEY;
@@ -71,35 +93,75 @@ export default async function HomePage() {
           <HeroBanner movies={trending.results.slice(0, 5)} />
           
           <div className="-mt-32 relative z-10 space-y-2">
-        <MovieRow 
-          title="Trending Now" 
-          movies={trending.results} 
-          showRank 
-        />
-        <MovieRow 
-          title="Popular Movies" 
-          movies={popular.results} 
-        />
-        <MovieRow 
-          title="Now Playing" 
-          movies={nowPlaying.results} 
-        />
-        <MovieRow 
-          title="Top Rated Movies" 
-          movies={topRated.results} 
-        />
-        <MovieRow 
-          title="Coming Soon" 
-          movies={upcoming.results} 
-        />
-        <MovieRow 
-          title="Popular TV Shows" 
-          movies={popularTV.results} 
-        />
-        <MovieRow 
-          title="Top Rated TV Shows" 
-          movies={topRatedTV.results} 
-        />
+            <MovieRow 
+              title="Trending Now" 
+              movies={trending.results} 
+              showRank 
+            />
+            <MovieRow 
+              title="Popular Movies" 
+              movies={popular.results} 
+            />
+            <MovieRow 
+              title="Now Playing" 
+              movies={nowPlaying.results} 
+            />
+            <MovieRow 
+              title="Action Movies" 
+              movies={actionMovies.results} 
+            />
+            <MovieRow 
+              title="Comedy" 
+              movies={comedyMovies.results} 
+            />
+            <MovieRow 
+              title="Horror" 
+              movies={horrorMovies.results} 
+            />
+            <MovieRow 
+              title="Popular TV Shows" 
+              movies={popularTV.results} 
+            />
+            <MovieRow 
+              title="Sci-Fi" 
+              movies={sciFiMovies.results} 
+            />
+            <MovieRow 
+              title="Thriller" 
+              movies={thrillerMovies.results} 
+            />
+            <MovieRow 
+              title="Top Rated Movies" 
+              movies={topRated.results} 
+            />
+            <MovieRow 
+              title="Romance" 
+              movies={romanceMovies.results} 
+            />
+            <MovieRow 
+              title="Crime TV" 
+              movies={crimeTV.results} 
+            />
+            <MovieRow 
+              title="Animation" 
+              movies={animationMovies.results} 
+            />
+            <MovieRow 
+              title="Drama TV" 
+              movies={dramaTV.results} 
+            />
+            <MovieRow 
+              title="Coming Soon" 
+              movies={upcoming.results} 
+            />
+            <MovieRow 
+              title="Top Rated TV Shows" 
+              movies={topRatedTV.results} 
+            />
+            <MovieRow 
+              title="Documentaries" 
+              movies={documentaries.results} 
+            />
           </div>
         </>
       )}
