@@ -534,9 +534,9 @@ export function VideoPlayer({
                 </div>
               </DialogContent>
             </Dialog>
+            </div>
           </div>
         </div>
-
       </div>
 
       {/* Netflix-style Bottom Controls Bar */}
