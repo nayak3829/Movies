@@ -1,83 +1,126 @@
 export interface StreamingServer {
   id: string;
   name: string;
-  movie: string;
-  tv: string;
+  url: string; // Base URL
+  movieTemplate: string;
+  tvTemplate: string;
   isCustom?: boolean;
   priority?: number;
 }
 
-// Default streaming servers - these will be used as fallback
+// Default streaming servers from your HTML file - sorted by reliability
 export const DEFAULT_SERVERS: StreamingServer[] = [
   {
+    id: 'all-servers',
+    name: 'All Servers (IMDB)',
+    url: 'https://smrta384und.com/play/',
+    movieTemplate: 'https://smrta384und.com/play/{imdb}',
+    tvTemplate: 'https://smrta384und.com/play/{imdb}',
+    priority: 0
+  },
+  {
     id: 'vidsrc-to',
-    name: 'Vidsrc',
-    movie: 'https://vidsrc.to/embed/movie/{id}',
-    tv: 'https://vidsrc.to/embed/tv/{id}/{season}/{episode}',
+    name: 'vidsrc.to',
+    url: 'vidsrc.to',
+    movieTemplate: 'https://vidsrc.to/embed/movie/{id}',
+    tvTemplate: 'https://vidsrc.to/embed/tv/{id}/{season}/{episode}',
     priority: 1
   },
   {
     id: 'vidsrc-vip',
-    name: 'Vidsrc VIP',
-    movie: 'https://vidsrc.vip/embed/movie/{id}',
-    tv: 'https://vidsrc.vip/embed/tv/{id}/{season}/{episode}',
+    name: 'vidsrc.vip',
+    url: 'vidsrc.vip',
+    movieTemplate: 'https://vidsrc.vip/embed/movie/{id}',
+    tvTemplate: 'https://vidsrc.vip/embed/tv/{id}/{season}/{episode}',
     priority: 2
   },
   {
-    id: 'autoembed',
-    name: 'AutoEmbed',
-    movie: 'https://autoembed.pro/movie/{id}',
-    tv: 'https://autoembed.pro/tv/{id}/{season}/{episode}',
+    id: 'vidsrc-icu',
+    name: 'vidsrc.icu',
+    url: 'vidsrc.icu',
+    movieTemplate: 'https://vidsrc.icu/embed/movie/{id}',
+    tvTemplate: 'https://vidsrc.icu/embed/tv/{id}/{season}/{episode}',
     priority: 3
   },
   {
-    id: 'embedsu',
-    name: 'EmbedSU',
-    movie: 'https://embed.su/embed/movie/{id}',
-    tv: 'https://embed.su/embed/tv/{id}/{season}/{episode}',
+    id: 'vidsrc-cc',
+    name: 'vidsrc.cc/v2',
+    url: 'vidsrc.cc/v2',
+    movieTemplate: 'https://vidsrc.cc/v2/embed/movie/{id}',
+    tvTemplate: 'https://vidsrc.cc/v2/embed/tv/{id}/{season}/{episode}',
     priority: 4
   },
   {
-    id: 'videasy',
-    name: 'Videasy',
-    movie: 'https://player.videasy.net/movie/{id}',
-    tv: 'https://player.videasy.net/tv/{id}/{season}/{episode}',
+    id: 'embed-su',
+    name: 'embed.su',
+    url: 'embed.su',
+    movieTemplate: 'https://embed.su/embed/movie/{id}',
+    tvTemplate: 'https://embed.su/embed/tv/{id}/{season}/{episode}',
     priority: 5
   },
   {
-    id: 'vidfast',
-    name: 'VidFast',
-    movie: 'https://vidfast.pro/movie/{id}',
-    tv: 'https://vidfast.pro/tv/{id}/{season}/{episode}',
+    id: 'vidsrc-me',
+    name: 'vidsrc.me',
+    url: 'vidsrc.me',
+    movieTemplate: 'https://vidsrc.me/embed/movie/{id}',
+    tvTemplate: 'https://vidsrc.me/embed/tv/{id}/{season}/{episode}',
     priority: 6
   },
   {
-    id: 'uembed',
-    name: 'UEmbed',
-    movie: 'https://uembed.site/embed/{id}',
-    tv: 'https://uembed.site/embed/{id}/{season}/{episode}',
+    id: 'autoembed-pro',
+    name: 'autoembed.pro',
+    url: 'autoembed.pro',
+    movieTemplate: 'https://autoembed.pro/embed/movie/{id}',
+    tvTemplate: 'https://autoembed.pro/embed/tv/{id}/{season}/{episode}',
     priority: 7
   },
   {
-    id: 'multiembed',
-    name: 'MultiEmbed',
-    movie: 'https://multiembed.mov/?video_id={id}&tmdb=1',
-    tv: 'https://multiembed.mov/?video_id={id}&tmdb=1&s={season}&e={episode}',
+    id: 'vidfast-pro',
+    name: 'vidfast.pro',
+    url: 'vidfast.pro',
+    movieTemplate: 'https://vidfast.pro/movie/{id}',
+    tvTemplate: 'https://vidfast.pro/embed/tv/{id}/{season}/{episode}',
     priority: 8
   },
   {
-    id: 'moviesapi',
-    name: 'MoviesAPI',
-    movie: 'https://moviesapi.club/movie/{id}',
-    tv: 'https://moviesapi.club/tv/{id}-{season}-{episode}',
+    id: 'videasy',
+    name: 'player.videasy.net',
+    url: 'player.videasy.net',
+    movieTemplate: 'https://player.videasy.net/movie/{id}',
+    tvTemplate: 'https://player.videasy.net/tv/{id}/{season}/{episode}',
     priority: 9
   },
   {
-    id: '2embed',
-    name: '2Embed',
-    movie: 'https://www.2embed.cc/embed/{id}',
-    tv: 'https://www.2embed.cc/embedtv/{id}&s={season}&e={episode}',
+    id: 'autoembed-cc',
+    name: 'player.autoembed.cc',
+    url: 'player.autoembed.cc',
+    movieTemplate: 'https://player.autoembed.cc/embed/movie/{id}',
+    tvTemplate: 'https://player.autoembed.cc/embed/tv/{id}/{season}/{episode}',
     priority: 10
+  },
+  {
+    id: 'uembed',
+    name: 'uembed.site',
+    url: 'uembed.site',
+    movieTemplate: 'https://uembed.site/?id={id}',
+    tvTemplate: 'https://uembed.site/?id={id}&s={season}&e={episode}',
+    priority: 11
+  },
+  {
+    id: '111movies',
+    name: '111movies.com',
+    url: '111movies.com',
+    movieTemplate: 'https://111movies.com/movie/{id}',
+    tvTemplate: 'https://111movies.com/tv/{id}/season/{season}/episode/{episode}',
+    priority: 12
+  },
+  {
+    id: 'hyhd',
+    name: 'hyhd.org',
+    url: 'hyhd.org',
+    movieTemplate: 'https://hyhd.org/embed/{id}',
+    tvTemplate: 'https://hyhd.org/embed/tv/{id}/{season}/{episode}',
+    priority: 13
   }
 ];
 
@@ -87,9 +130,19 @@ export function getEmbedUrl(
   tmdbId: number,
   type: 'movie' | 'tv',
   season?: number,
-  episode?: number
+  episode?: number,
+  imdbId?: string | null
 ): string {
-  const template = type === 'movie' ? server.movie : server.tv;
+  // Special handling for IMDB-based server
+  if (server.id === 'all-servers') {
+    if (!imdbId) {
+      // Return null indicator - will need to skip this server
+      return '';
+    }
+    return server.movieTemplate.replace('{imdb}', imdbId);
+  }
+
+  const template = type === 'movie' ? server.movieTemplate : server.tvTemplate;
   return template
     .replace('{id}', String(tmdbId))
     .replace('{season}', String(season || 1))
@@ -97,9 +150,8 @@ export function getEmbedUrl(
 }
 
 // Local storage keys
-const SERVERS_STORAGE_KEY = 'streaming_servers';
-const CUSTOM_SERVERS_KEY = 'custom_servers';
-const SERVER_STATS_KEY = 'server_stats';
+const CUSTOM_SERVERS_KEY = 'custom_streaming_servers';
+const SERVER_STATS_KEY = 'streaming_server_stats';
 
 // Server statistics for smart sorting
 export interface ServerStats {
@@ -108,22 +160,6 @@ export interface ServerStats {
   failCount: number;
   lastSuccess?: number;
   avgLoadTime?: number;
-}
-
-// Get servers from localStorage or return defaults
-export function getStoredServers(): StreamingServer[] {
-  if (typeof window === 'undefined') return DEFAULT_SERVERS;
-  
-  try {
-    const stored = localStorage.getItem(SERVERS_STORAGE_KEY);
-    if (stored) {
-      const servers = JSON.parse(stored);
-      return servers.length > 0 ? servers : DEFAULT_SERVERS;
-    }
-  } catch {
-    // Ignore parsing errors
-  }
-  return DEFAULT_SERVERS;
 }
 
 // Get custom servers added by user
@@ -141,12 +177,6 @@ export function getCustomServers(): StreamingServer[] {
   return [];
 }
 
-// Save servers to localStorage
-export function saveServers(servers: StreamingServer[]): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(SERVERS_STORAGE_KEY, JSON.stringify(servers));
-}
-
 // Add a custom server
 export function addCustomServer(server: Omit<StreamingServer, 'id' | 'isCustom'>): StreamingServer {
   const customServers = getCustomServers();
@@ -154,7 +184,7 @@ export function addCustomServer(server: Omit<StreamingServer, 'id' | 'isCustom'>
     ...server,
     id: `custom-${Date.now()}`,
     isCustom: true,
-    priority: 0 // Custom servers get highest priority
+    priority: -1 // Custom servers get highest priority
   };
   customServers.push(newServer);
   
@@ -173,29 +203,32 @@ export function removeCustomServer(serverId: string): void {
   localStorage.setItem(CUSTOM_SERVERS_KEY, JSON.stringify(customServers));
 }
 
-// Get all servers (default + custom), sorted by priority and stats
+// Get all servers (custom + default), sorted by priority and stats
 export function getAllServers(): StreamingServer[] {
-  const defaultServers = DEFAULT_SERVERS;
   const customServers = getCustomServers();
   const stats = getServerStats();
   
-  const allServers = [...customServers, ...defaultServers];
+  const allServers = [...customServers, ...DEFAULT_SERVERS];
   
   // Sort by success rate and priority
   return allServers.sort((a, b) => {
     const statsA = stats[a.id] || { successCount: 0, failCount: 0 };
     const statsB = stats[b.id] || { successCount: 0, failCount: 0 };
     
-    const rateA = statsA.successCount / (statsA.successCount + statsA.failCount + 1);
-    const rateB = statsB.successCount / (statsB.successCount + statsB.failCount + 1);
+    const totalA = statsA.successCount + statsA.failCount;
+    const totalB = statsB.successCount + statsB.failCount;
     
-    // Prefer higher success rate
-    if (Math.abs(rateA - rateB) > 0.1) {
-      return rateB - rateA;
+    // If both have stats, prefer higher success rate
+    if (totalA > 2 && totalB > 2) {
+      const rateA = statsA.successCount / totalA;
+      const rateB = statsB.successCount / totalB;
+      if (Math.abs(rateA - rateB) > 0.15) {
+        return rateB - rateA;
+      }
     }
     
-    // Then by priority
-    return (a.priority || 99) - (b.priority || 99);
+    // Then by priority (lower = better)
+    return (a.priority ?? 99) - (b.priority ?? 99);
   });
 }
 

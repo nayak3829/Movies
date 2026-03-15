@@ -29,6 +29,9 @@ interface TVDetailClientProps {
         profile_path: string | null;
       }[];
     };
+    external_ids?: {
+      imdb_id: string | null;
+    };
   };
 }
 
@@ -72,6 +75,7 @@ export function TVDetailClient({ show }: TVDetailClientProps) {
       {showPlayer && (
         <VideoPlayer
           tmdbId={show.id}
+          imdbId={show.external_ids?.imdb_id}
           type="tv"
           title={title}
           totalSeasons={totalSeasons}

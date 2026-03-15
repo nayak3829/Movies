@@ -52,6 +52,18 @@ export interface MovieDetails extends Movie {
       profile_path: string | null;
     }[];
   };
+  external_ids?: {
+    imdb_id: string | null;
+    facebook_id: string | null;
+    instagram_id: string | null;
+    twitter_id: string | null;
+  };
+  number_of_seasons?: number;
+  seasons?: {
+    season_number: number;
+    episode_count: number;
+    name: string;
+  }[];
 }
 
 export function getImageUrl(path: string | null, size: 'w200' | 'w300' | 'w500' | 'w780' | 'original' = 'w500'): string {
@@ -112,11 +124,11 @@ export async function getTopRatedTVShows(): Promise<MovieResponse> {
 }
 
 export async function getMovieDetails(id: number): Promise<MovieDetails> {
-  return fetchFromTMDB<MovieDetails>(`/movie/${id}`, { append_to_response: 'videos,credits' });
+  return fetchFromTMDB<MovieDetails>(`/movie/${id}`, { append_to_response: 'videos,credits,external_ids' });
 }
 
 export async function getTVDetails(id: number): Promise<MovieDetails> {
-  return fetchFromTMDB<MovieDetails>(`/tv/${id}`, { append_to_response: 'videos,credits' });
+  return fetchFromTMDB<MovieDetails>(`/tv/${id}`, { append_to_response: 'videos,credits,external_ids' });
 }
 
 export async function searchMulti(query: string): Promise<MovieResponse> {

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   X, ChevronDown, Server, Loader2, CheckCircle, XCircle, 
-  RefreshCw, Plus, Trash2, Settings, Zap, Clock, BarChart3,
+  RefreshCw, Plus, Trash2, Settings, Zap, BarChart3,
   ChevronLeft, ChevronRight, SkipForward
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -38,6 +38,7 @@ import {
 
 interface VideoPlayerProps {
   tmdbId: number;
+  imdbId?: string | null;
   type: 'movie' | 'tv';
   title: string;
   season?: number;
@@ -51,6 +52,7 @@ type ServerStatus = 'idle' | 'loading' | 'success' | 'failed';
 
 export function VideoPlayer({
   tmdbId,
+  imdbId,
   type,
   title,
   season = 1,
@@ -83,12 +85,16 @@ export function VideoPlayer({
   // Load servers on mount
   useEffect(() => {
     const loadedServers = getAllServers();
-    setServers(loadedServers);
-  }, []);
+    // If no IMDB ID, filter out the all-servers option
+    const filteredServers = imdbId 
+      ? loadedServers 
+      : loadedServers.filter(s => s.id !== 'all-servers');
+    setServers(filteredServers);
+  }, [imdbId]);
 
   const currentServer = servers[currentServerIndex];
   const embedUrl = currentServer 
-    ? getEmbedUrl(currentServer, tmdbId, type, currentSeason, currentEpisode)
+    ? getEmbedUrl(currentServer, tmdbId, type, currentSeason, currentEpisode, imdbId)
     : '';
 
   const totalEpisodes = episodesPerSeason[currentSeason - 1] || 10;
@@ -127,7 +133,10 @@ export function VideoPlayer({
   const handleRetryAutoFetch = () => {
     // Reload servers with updated stats
     const loadedServers = getAllServers();
-    setServers(loadedServers);
+    const filteredServers = imdbId 
+      ? loadedServers 
+      : loadedServers.filter(s => s.id !== 'all-servers');
+    setServers(filteredServers);
     setIsAutoFetching(true);
     setIsLoading(true);
     setCurrentServerIndex(0);
@@ -165,9 +174,10 @@ export function VideoPlayer({
     
     const newServer = addCustomServer({
       name: newServerName,
-      movie: newServerMovie,
-      tv: newServerTv,
-      priority: 0
+      url: newServerMovie.split('/')[2] || newServerName,
+      movieTemplate: newServerMovie,
+      tvTemplate: newServerTv,
+      priority: -1
     });
     
     setServers(prev => [newServer, ...prev]);
@@ -188,7 +198,10 @@ export function VideoPlayer({
   const handleResetStats = () => {
     resetServerStats();
     const loadedServers = getAllServers();
-    setServers(loadedServers);
+    const filteredServers = imdbId 
+      ? loadedServers 
+      : loadedServers.filter(s => s.id !== 'all-servers');
+    setServers(filteredServers);
   };
 
   // Auto-fetch logic with timeout
@@ -337,6 +350,7 @@ export function VideoPlayer({
                   >
                     <span className="flex items-center gap-2">
                       {s.isCustom && <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1 rounded">Custom</span>}
+                      {s.id === 'all-servers' && <span className="text-[10px] bg-green-500/20 text-green-400 px-1 rounded">Best</span>}
                       {s.name}
                     </span>
                     {getServerStatusIcon(s.id)}
@@ -441,7 +455,7 @@ export function VideoPlayer({
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="movieUrl">Movie URL</Label>
+                        <Label htmlFor="movieUrl">Movie URL Template</Label>
                         <Input 
                           id="movieUrl"
                           placeholder="https://example.com/movie/{id}"
@@ -451,7 +465,7 @@ export function VideoPlayer({
                         <p className="text-xs text-muted-foreground">Use {'{id}'} for TMDB ID</p>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="tvUrl">TV URL</Label>
+                        <Label htmlFor="tvUrl">TV URL Template</Label>
                         <Input 
                           id="tvUrl"
                           placeholder="https://example.com/tv/{id}/{season}/{episode}"

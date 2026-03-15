@@ -27,6 +27,9 @@ interface MovieDetailClientProps {
         profile_path: string | null;
       }[];
     };
+    external_ids?: {
+      imdb_id: string | null;
+    };
   };
 }
 
@@ -64,6 +67,7 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
       {showPlayer && (
         <VideoPlayer
           tmdbId={movie.id}
+          imdbId={movie.external_ids?.imdb_id}
           type="movie"
           title={movie.title}
           onClose={() => setShowPlayer(false)}
