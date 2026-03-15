@@ -2,12 +2,11 @@ import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { MovieRow } from '@/components/movie-row';
 import {
-  getPopularTVShows,
-  getTopRatedTVShows,
   getTrending,
+  getUpcomingMovies,
+  getNowPlayingMovies,
   getAiringTodayTV,
   getOnTheAirTV,
-  getTVShowsByGenre,
   MovieResponse,
 } from '@/lib/tmdb';
 
@@ -21,36 +20,24 @@ async function fetchSafe<T>(fetcher: () => Promise<T>, fallback: T): Promise<T> 
   }
 }
 
-export default async function TVShowsPage() {
+export default async function NewPopularPage() {
   const [
-    popular,
-    topRated,
-    trending,
+    trendingDay,
+    trendingWeek,
+    upcoming,
+    nowPlaying,
     airingToday,
     onTheAir,
-    drama,
-    comedy,
-    sciFiFantasy,
-    crime,
   ] = await Promise.all([
-    fetchSafe(() => getPopularTVShows(), emptyResponse),
-    fetchSafe(() => getTopRatedTVShows(), emptyResponse),
+    fetchSafe(() => getTrending('day'), emptyResponse),
     fetchSafe(() => getTrending('week'), emptyResponse),
+    fetchSafe(() => getUpcomingMovies(), emptyResponse),
+    fetchSafe(() => getNowPlayingMovies(), emptyResponse),
     fetchSafe(() => getAiringTodayTV(), emptyResponse),
     fetchSafe(() => getOnTheAirTV(), emptyResponse),
-    fetchSafe(() => getTVShowsByGenre(18), emptyResponse),
-    fetchSafe(() => getTVShowsByGenre(35), emptyResponse),
-    fetchSafe(() => getTVShowsByGenre(10765), emptyResponse),
-    fetchSafe(() => getTVShowsByGenre(80), emptyResponse),
   ]);
 
-  // Filter only TV shows from trending
-  const trendingTV = {
-    ...trending,
-    results: trending.results.filter(item => item.media_type === 'tv' || item.first_air_date),
-  };
-
-  const hasContent = popular.results.length > 0;
+  const hasContent = trendingWeek.results.length > 0;
 
   return (
     <main className="min-h-screen bg-background">
@@ -62,29 +49,26 @@ export default async function TVShowsPage() {
             className="text-4xl md:text-5xl font-bold"
             style={{ fontFamily: 'var(--font-bebas)', letterSpacing: '0.05em' }}
           >
-            TV Shows
+            New & Popular
           </h1>
-          <p className="text-muted-foreground mt-2">Binge-worthy series waiting for you</p>
+          <p className="text-muted-foreground mt-2">Discover what's trending and upcoming</p>
         </div>
 
         {!hasContent ? (
           <div className="flex flex-col items-center justify-center min-h-[50vh] px-4 text-center">
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-8 max-w-lg">
-              <h2 className="text-xl font-bold text-white mb-4">Unable to load TV shows</h2>
+              <h2 className="text-xl font-bold text-white mb-4">Unable to load content</h2>
               <p className="text-gray-400 mb-4">Please check your TMDB API key in project settings.</p>
             </div>
           </div>
         ) : (
           <div className="space-y-2">
-            <MovieRow title="Trending TV Shows" movies={trendingTV.results} showRank />
-            <MovieRow title="Airing Today" movies={airingToday.results} />
-            <MovieRow title="Popular TV Shows" movies={popular.results} />
+            <MovieRow title="Trending Today" movies={trendingDay.results} showRank />
+            <MovieRow title="Trending This Week" movies={trendingWeek.results} />
+            <MovieRow title="Now Playing in Theaters" movies={nowPlaying.results} />
+            <MovieRow title="Coming Soon" movies={upcoming.results} />
+            <MovieRow title="TV Shows Airing Today" movies={airingToday.results} />
             <MovieRow title="Currently On Air" movies={onTheAir.results} />
-            <MovieRow title="Top Rated TV Shows" movies={topRated.results} />
-            <MovieRow title="Drama" movies={drama.results} />
-            <MovieRow title="Comedy" movies={comedy.results} />
-            <MovieRow title="Sci-Fi & Fantasy" movies={sciFiFantasy.results} />
-            <MovieRow title="Crime" movies={crime.results} />
           </div>
         )}
       </div>
