@@ -20,6 +20,16 @@ import {
   Clock,
   Trash2,
   Activity,
+  TrendingUp,
+  TrendingDown,
+  CheckCircle2,
+  XCircle,
+  Crown,
+  Medal,
+  Award,
+  Wifi,
+  WifiOff,
+  AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SearchModal } from './search-modal';
@@ -55,15 +65,33 @@ export function Navbar() {
       const total = serverStats ? serverStats.successCount + serverStats.failCount : 0;
       const successRate = total > 0 ? serverStats!.successCount / total : null;
       const avgLoadTime = serverStats?.avgLoadTime ?? null;
+      const lastUsed = serverStats?.lastSuccess ?? null;
       
       return {
         ...server,
         stats: serverStats,
         successRate,
         total,
-        avgLoadTime
+        avgLoadTime,
+        lastUsed,
+        successCount: serverStats?.successCount ?? 0,
+        failCount: serverStats?.failCount ?? 0
       };
     });
+  };
+
+  // Get summary stats
+  const getSummaryStats = () => {
+    const servers = serversList;
+    const totalServers = servers.length;
+    const testedServers = servers.filter(s => s.total > 0).length;
+    const goodServers = servers.filter(s => s.successRate !== null && s.successRate > 0.7).length;
+    const totalRequests = servers.reduce((acc, s) => acc + s.total, 0);
+    const avgSuccessRate = servers.filter(s => s.successRate !== null).length > 0
+      ? servers.filter(s => s.successRate !== null).reduce((acc, s) => acc + (s.successRate ?? 0), 0) / servers.filter(s => s.successRate !== null).length
+      : 0;
+    
+    return { totalServers, testedServers, goodServers, totalRequests, avgSuccessRate };
   };
 
   // Manual refresh function
@@ -417,8 +445,34 @@ export function Navbar() {
               </p>
             )}
           </DialogHeader>
+
+          {/* Summary Stats Cards */}
+          {serversList.length > 0 && (
+            <div className="grid grid-cols-4 gap-2 py-2">
+              <div className="flex flex-col items-center p-2 rounded-lg bg-primary/10 border border-primary/20">
+                <Server className="w-4 h-4 text-primary mb-1" />
+                <span className="text-lg font-bold text-foreground">{getSummaryStats().totalServers}</span>
+                <span className="text-[10px] text-muted-foreground">Total</span>
+              </div>
+              <div className="flex flex-col items-center p-2 rounded-lg bg-green-500/10 border border-green-500/20">
+                <CheckCircle2 className="w-4 h-4 text-green-500 mb-1" />
+                <span className="text-lg font-bold text-green-500">{getSummaryStats().goodServers}</span>
+                <span className="text-[10px] text-muted-foreground">Good</span>
+              </div>
+              <div className="flex flex-col items-center p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                <Activity className="w-4 h-4 text-blue-500 mb-1" />
+                <span className="text-lg font-bold text-blue-500">{getSummaryStats().totalRequests}</span>
+                <span className="text-[10px] text-muted-foreground">Requests</span>
+              </div>
+              <div className="flex flex-col items-center p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                <TrendingUp className="w-4 h-4 text-yellow-500 mb-1" />
+                <span className="text-lg font-bold text-yellow-500">{Math.round(getSummaryStats().avgSuccessRate * 100)}%</span>
+                <span className="text-[10px] text-muted-foreground">Avg Rate</span>
+              </div>
+            </div>
+          )}
           
-          <div className="space-y-2 overflow-y-auto max-h-[60vh] pr-2">
+          <div className="space-y-2 overflow-y-auto max-h-[50vh] pr-2">
             {serversList.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
                 <Server className="w-10 h-10 mb-2 opacity-50" />
@@ -437,27 +491,37 @@ export function Navbar() {
                     className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50 hover:border-border transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className={cn(
-                        "text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full",
-                        index === 0 && "bg-primary/20 text-primary",
-                        index === 1 && "bg-yellow-500/20 text-yellow-500",
-                        index === 2 && "bg-orange-500/20 text-orange-500",
-                        index > 2 && "bg-muted text-muted-foreground"
+                      <div className={cn(
+                        "relative flex items-center justify-center w-7 h-7 rounded-full",
+                        index === 0 && "bg-gradient-to-br from-yellow-400 to-yellow-600",
+                        index === 1 && "bg-gradient-to-br from-gray-300 to-gray-500",
+                        index === 2 && "bg-gradient-to-br from-orange-400 to-orange-600",
+                        index > 2 && "bg-muted"
                       )}>
-                        {index + 1}
-                      </span>
+                        {index === 0 && <Crown className="w-4 h-4 text-yellow-900" />}
+                        {index === 1 && <Medal className="w-4 h-4 text-gray-700" />}
+                        {index === 2 && <Award className="w-4 h-4 text-orange-900" />}
+                        {index > 2 && <span className="text-xs font-bold text-muted-foreground">{index + 1}</span>}
+                      </div>
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">
                           {server.name}
                         </p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>{server.url}</span>
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Wifi className="w-3 h-3" />
+                            {server.url}
+                          </span>
                           {hasStats && (
                             <>
                               <span className="text-border">|</span>
-                              <span className="flex items-center gap-1">
-                                <Activity className="w-3 h-3" />
-                                {server.total} tries
+                              <span className="flex items-center gap-1 text-green-500">
+                                <CheckCircle2 className="w-3 h-3" />
+                                {server.successCount}
+                              </span>
+                              <span className="flex items-center gap-1 text-red-500">
+                                <XCircle className="w-3 h-3" />
+                                {server.failCount}
                               </span>
                             </>
                           )}
@@ -465,31 +529,46 @@ export function Navbar() {
                       </div>
                     </div>
                     
-                    <div className="flex flex-col items-end gap-0.5 shrink-0">
+                    <div className="flex flex-col items-end gap-1 shrink-0">
                       {hasStats ? (
                         <>
                           <div className="flex items-center gap-1.5">
-                            <span className={cn(
-                              "text-sm font-semibold",
-                              isGood && "text-green-500",
-                              isMedium && "text-yellow-500",
-                              isPoor && "text-red-500"
+                            {/* Success Rate Badge */}
+                            <div className={cn(
+                              "px-2 py-0.5 rounded-full text-xs font-bold flex items-center gap-1",
+                              isGood && "bg-green-500/20 text-green-500",
+                              isMedium && "bg-yellow-500/20 text-yellow-500",
+                              isPoor && "bg-red-500/20 text-red-500"
                             )}>
+                              {isGood && <TrendingUp className="w-3 h-3" />}
+                              {isMedium && <BarChart3 className="w-3 h-3" />}
+                              {isPoor && <TrendingDown className="w-3 h-3" />}
                               {Math.round((server.successRate ?? 0) * 100)}%
-                            </span>
-                            {isGood && <Zap className="w-4 h-4 text-green-500" />}
-                            {isMedium && <BarChart3 className="w-4 h-4 text-yellow-500" />}
-                            {isPoor && <BarChart3 className="w-4 h-4 text-red-500" />}
+                            </div>
                           </div>
-                          {server.avgLoadTime && (
-                            <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                              <Clock className="w-2.5 h-2.5" />
-                              {(server.avgLoadTime / 1000).toFixed(1)}s avg
-                            </span>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {server.avgLoadTime && (
+                              <span className="text-[10px] text-muted-foreground flex items-center gap-1 bg-muted/50 px-1.5 py-0.5 rounded">
+                                <Clock className="w-2.5 h-2.5" />
+                                {(server.avgLoadTime / 1000).toFixed(1)}s
+                              </span>
+                            )}
+                            {server.lastUsed && (
+                              <span className="text-[10px] text-muted-foreground flex items-center gap-1 bg-muted/50 px-1.5 py-0.5 rounded">
+                                {Date.now() - server.lastUsed < 3600000 ? (
+                                  <span className="text-green-500">Active</span>
+                                ) : (
+                                  <span>{Math.floor((Date.now() - server.lastUsed) / 3600000)}h ago</span>
+                                )}
+                              </span>
+                            )}
+                          </div>
                         </>
                       ) : (
-                        <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded">New</span>
+                        <div className="flex items-center gap-1 bg-blue-500/20 text-blue-500 px-2 py-1 rounded-full">
+                          <AlertTriangle className="w-3 h-3" />
+                          <span className="text-xs font-medium">Untested</span>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -498,9 +577,20 @@ export function Navbar() {
             )}
           </div>
           
-          <div className="pt-3 border-t border-border">
-            <p className="text-xs text-muted-foreground text-center">
-              Servers are automatically sorted by success rate, recent usage, and load time.
+          <div className="pt-3 border-t border-border space-y-2">
+            <div className="flex items-center justify-center gap-4 text-xs">
+              <span className="flex items-center gap-1 text-green-500">
+                <TrendingUp className="w-3 h-3" /> {'>'}70% Good
+              </span>
+              <span className="flex items-center gap-1 text-yellow-500">
+                <BarChart3 className="w-3 h-3" /> 40-70% Medium
+              </span>
+              <span className="flex items-center gap-1 text-red-500">
+                <TrendingDown className="w-3 h-3" /> {'<'}40% Poor
+              </span>
+            </div>
+            <p className="text-[10px] text-muted-foreground text-center">
+              Auto-sorted by success rate, recency, and load time. Stats are stored locally.
             </p>
           </div>
         </DialogContent>
