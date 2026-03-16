@@ -9,18 +9,13 @@ export function WhatsAppPopup() {
   const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
-    // Check if user has already seen the popup
-    const hasSeenPopup = localStorage.getItem('whatsappPopupSeen');
+    // Show popup after a short delay for better UX on every page load
+    const timer = setTimeout(() => {
+      setIsOpen(true);
+      setTimeout(() => setIsAnimating(true), 50);
+    }, 2000);
     
-    if (!hasSeenPopup) {
-      // Show popup after a short delay for better UX
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-        setTimeout(() => setIsAnimating(true), 50);
-      }, 2000);
-      
-      return () => clearTimeout(timer);
-    }
+    return () => clearTimeout(timer);
   }, []);
 
   const handleClose = () => {
@@ -29,7 +24,6 @@ export function WhatsAppPopup() {
     setTimeout(() => {
       setIsOpen(false);
       setIsClosing(false);
-      localStorage.setItem('whatsappPopupSeen', 'true');
     }, 500);
   };
 
