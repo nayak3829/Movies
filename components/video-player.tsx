@@ -128,9 +128,17 @@ export function VideoPlayer({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const triedServersRef = useRef<Set<number>>(new Set());
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Mount check for hydration safety
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Load servers on mount - use smart auto-fetch sorting and start auto-fetch immediately
   useEffect(() => {
+    if (!isMounted) return;
+    
     const loadedServers = getServersForAutoFetch();
     // If no IMDB ID, filter out the all-servers option
     const filteredServers = imdbId 
@@ -155,7 +163,7 @@ export function VideoPlayer({
           : `Connecting to ${firstServer?.name}...`
       );
     }
-  }, [imdbId]);
+  }, [imdbId, isMounted]);
 
   // Block popup windows and 3rd party redirects from streaming servers
   useEffect(() => {
@@ -1081,20 +1089,23 @@ export function VideoPlayer({
         />
         
         {/* Video iframe */}
-        <iframe
-          ref={iframeRef}
-          src={embedUrl}
-          className="w-full h-full"
-          allowFullScreen
-          allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
-          referrerPolicy="no-referrer"
-          onLoad={handleIframeLoad}
-          onError={() => {
-            if (isAutoFetching) {
-              tryNextServer();
-            }
-          }}
-        />
+        {isMounted && embedUrl && (
+          <iframe
+            ref={iframeRef}
+            src={embedUrl}
+            className="w-full h-full"
+            allowFullScreen
+            allow="autoplay; fullscreen; picture-in-picture; encrypted-media; accelerometer; gyroscope"
+            referrerPolicy="origin"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation allow-top-navigation"
+            onLoad={handleIframeLoad}
+            onError={() => {
+              if (isAutoFetching) {
+                tryNextServer();
+              }
+            }}
+          />
+        )}
       </div>
     </div>
   );

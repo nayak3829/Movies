@@ -13,12 +13,20 @@ export interface StreamingServer {
 // Updated March 2026 with working servers
 export const DEFAULT_SERVERS: StreamingServer[] = [
   {
+    id: 'vidsrc-icu',
+    name: 'VidSrc ICU (Multi-Audio)',
+    url: 'vidsrc.icu',
+    movieTemplate: 'https://vidsrc.icu/embed/movie/{id}',
+    tvTemplate: 'https://vidsrc.icu/embed/tv/{id}/{season}/{episode}',
+    priority: 0
+  },
+  {
     id: 'vidsrc-cc',
     name: 'VidSrc CC (Multi-Audio)',
     url: 'vidsrc.cc',
     movieTemplate: 'https://vidsrc.cc/v2/embed/movie/{id}',
     tvTemplate: 'https://vidsrc.cc/v2/embed/tv/{id}/{season}/{episode}',
-    priority: 0
+    priority: 1
   },
   {
     id: 'embed-su',
@@ -26,7 +34,15 @@ export const DEFAULT_SERVERS: StreamingServer[] = [
     url: 'embed.su',
     movieTemplate: 'https://embed.su/embed/movie/{id}',
     tvTemplate: 'https://embed.su/embed/tv/{id}/{season}/{episode}',
-    priority: 1
+    priority: 2
+  },
+  {
+    id: 'vidsrc-dev',
+    name: 'VidSrc Dev',
+    url: 'vidsrc.dev',
+    movieTemplate: 'https://vidsrc.dev/embed/movie/{id}',
+    tvTemplate: 'https://vidsrc.dev/embed/tv/{id}/{season}/{episode}',
+    priority: 3
   },
   {
     id: 'multiembed',
@@ -34,7 +50,7 @@ export const DEFAULT_SERVERS: StreamingServer[] = [
     url: 'multiembed.mov',
     movieTemplate: 'https://multiembed.mov/directstream.php?video_id={id}&tmdb=1',
     tvTemplate: 'https://multiembed.mov/directstream.php?video_id={id}&tmdb=1&s={season}&e={episode}',
-    priority: 2
+    priority: 4
   },
   {
     id: 'autoembed-cc',
@@ -42,15 +58,15 @@ export const DEFAULT_SERVERS: StreamingServer[] = [
     url: 'player.autoembed.cc',
     movieTemplate: 'https://player.autoembed.cc/embed/movie/{id}',
     tvTemplate: 'https://player.autoembed.cc/embed/tv/{id}/{season}/{episode}',
-    priority: 3
+    priority: 5
   },
   {
-    id: 'vidsrc-pro',
-    name: 'VidSrc Pro',
-    url: 'vidsrc.pro',
-    movieTemplate: 'https://vidsrc.pro/embed/movie/{id}',
-    tvTemplate: 'https://vidsrc.pro/embed/tv/{id}/{season}/{episode}',
-    priority: 4
+    id: 'vidsrc-me',
+    name: 'VidSrc ME',
+    url: 'vidsrc.me',
+    movieTemplate: 'https://vidsrc.me/embed/movie/{id}',
+    tvTemplate: 'https://vidsrc.me/embed/tv/{id}/{season}/{episode}',
+    priority: 6
   },
   {
     id: 'vidsrc-xyz',
@@ -58,7 +74,7 @@ export const DEFAULT_SERVERS: StreamingServer[] = [
     url: 'vidsrc.xyz',
     movieTemplate: 'https://vidsrc.xyz/embed/movie/{id}',
     tvTemplate: 'https://vidsrc.xyz/embed/tv/{id}/{season}/{episode}',
-    priority: 5
+    priority: 7
   },
   {
     id: '2embed',
@@ -66,15 +82,7 @@ export const DEFAULT_SERVERS: StreamingServer[] = [
     url: '2embed.cc',
     movieTemplate: 'https://www.2embed.cc/embed/{id}',
     tvTemplate: 'https://www.2embed.cc/embedtv/{id}&s={season}&e={episode}',
-    priority: 6
-  },
-  {
-    id: 'videasy',
-    name: 'Videasy',
-    url: 'player.videasy.net',
-    movieTemplate: 'https://player.videasy.net/movie/{id}',
-    tvTemplate: 'https://player.videasy.net/tv/{id}/{season}/{episode}',
-    priority: 7
+    priority: 8
   },
   {
     id: 'smashystream',
@@ -82,7 +90,7 @@ export const DEFAULT_SERVERS: StreamingServer[] = [
     url: 'embed.smashystream.com',
     movieTemplate: 'https://embed.smashystream.com/playere.php?tmdb={id}',
     tvTemplate: 'https://embed.smashystream.com/playere.php?tmdb={id}&season={season}&episode={episode}',
-    priority: 8
+    priority: 9
   },
   {
     id: 'moviesapi',
@@ -90,15 +98,15 @@ export const DEFAULT_SERVERS: StreamingServer[] = [
     url: 'moviesapi.club',
     movieTemplate: 'https://moviesapi.club/movie/{id}',
     tvTemplate: 'https://moviesapi.club/tv/{id}-{season}-{episode}',
-    priority: 9
+    priority: 10
   },
   {
-    id: 'all-servers',
-    name: 'All Servers (IMDB)',
-    url: 'smrta384und.com',
-    movieTemplate: 'https://smrta384und.com/play/{imdb}',
-    tvTemplate: 'https://smrta384und.com/play/{imdb}',
-    priority: 10
+    id: 'vidlink',
+    name: 'VidLink',
+    url: 'vidlink.pro',
+    movieTemplate: 'https://vidlink.pro/movie/{id}',
+    tvTemplate: 'https://vidlink.pro/tv/{id}/{season}/{episode}',
+    priority: 11
   }
 ];
 
