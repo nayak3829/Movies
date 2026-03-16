@@ -121,8 +121,8 @@ export function HeroBanner({ movies }: HeroBannerProps) {
         </button>
       </div>
 
-      {/* Slide Indicators */}
-      <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 sm:gap-2">
+      {/* Slide Indicators - Hidden on mobile */}
+      <div className="hidden sm:flex absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 items-center gap-1.5 sm:gap-2">
         {movies.slice(0, 5).map((_, index) => (
           <button
             key={index}
