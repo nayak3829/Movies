@@ -16,9 +16,11 @@ export function MovieRow({ title, movies, showRank = false }: MovieRowProps) {
   const rowRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -55,7 +57,7 @@ export function MovieRow({ title, movies, showRank = false }: MovieRowProps) {
       <div className="flex items-center justify-between mb-3 md:mb-4 px-4 md:px-12">
         <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold tracking-tight">{title}</h2>
         {/* Mobile scroll indicator */}
-        {isMobile && (
+        {isMounted && isMobile && (
           <div className="flex items-center gap-1">
             <div className={cn(
               "w-1.5 h-1.5 rounded-full transition-colors",

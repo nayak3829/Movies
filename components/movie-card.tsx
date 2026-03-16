@@ -15,6 +15,7 @@ interface MovieCardProps {
 export function MovieCard({ movie, index }: MovieCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  const [isMounted, setIsMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -25,6 +26,7 @@ export function MovieCard({ movie, index }: MovieCardProps) {
   const rating = movie.vote_average?.toFixed(1);
 
   useEffect(() => {
+    setIsMounted(true);
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -116,7 +118,7 @@ export function MovieCard({ movie, index }: MovieCardProps) {
           {/* Rating Badge - Mobile visible */}
           <div className={cn(
             "absolute top-1.5 right-1.5 sm:top-2 sm:right-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-black/70 backdrop-blur-sm transition-opacity",
-            isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            isMounted && isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           )}>
             <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500 fill-yellow-500" />
             <span className="text-[10px] sm:text-xs font-medium">{rating}</span>
@@ -141,7 +143,7 @@ export function MovieCard({ movie, index }: MovieCardProps) {
           )}
 
           {/* Mobile Title Overlay */}
-          {isMobile && (
+          {isMounted && isMobile && (
             <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/90 to-transparent">
               <p className="text-[11px] font-medium truncate text-white">{title}</p>
               <p className="text-[9px] text-gray-400">{year}</p>
@@ -150,7 +152,7 @@ export function MovieCard({ movie, index }: MovieCardProps) {
         </div>
         
         {/* Glow Effect - Desktop only */}
-        {!isMobile && (
+        {isMounted && !isMobile && (
           <div 
             className={cn(
               'absolute inset-0 rounded-lg opacity-0 transition-opacity duration-300 pointer-events-none blur-xl -z-10',
@@ -164,7 +166,7 @@ export function MovieCard({ movie, index }: MovieCardProps) {
         )}
 
         {/* Expanded Card on Hover - Desktop only */}
-        {isHovered && !isMobile && (
+        {isHovered && isMounted && !isMobile && (
           <div className="absolute top-full left-0 right-0 bg-card/95 backdrop-blur-sm rounded-b-lg p-3 shadow-2xl -mt-1 border-t border-border/20">
             {/* Action Buttons */}
             <div className="flex items-center gap-1.5 mb-2.5">

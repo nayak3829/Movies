@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Play, Plus, Check, Share2, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,13 +35,14 @@ interface MovieDetailClientProps {
 
 export function MovieDetailClient({ movie }: MovieDetailClientProps) {
   const [showPlayer, setShowPlayer] = useState(false);
-  const [inMyList, setInMyList] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const list = JSON.parse(localStorage.getItem('myList') || '[]');
-      return list.some((item: { id: number }) => item.id === movie.id);
-    }
-    return false;
-  });
+  const [inMyList, setInMyList] = useState(false);
+
+  // Check localStorage after mount to avoid hydration mismatch
+  useEffect(() => {
+    const list = JSON.parse(localStorage.getItem('myList') || '[]');
+    const isInList = list.some((item: { id: number }) => item.id === movie.id);
+    setInMyList(isInList);
+  }, [movie.id]);
 
   const toggleMyList = () => {
     const list = JSON.parse(localStorage.getItem('myList') || '[]');

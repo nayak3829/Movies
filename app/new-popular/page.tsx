@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { MovieRow } from '@/components/movie-row';
@@ -9,6 +10,11 @@ import {
   getTopRatedTVShows,
   MovieResponse,
 } from '@/lib/tmdb';
+
+export const metadata: Metadata = {
+  title: 'New & Popular - TechVyro',
+  description: 'Discover what\'s trending and upcoming. Browse the latest movies and TV shows.',
+};
 
 const emptyResponse: MovieResponse = { page: 1, results: [], total_pages: 0, total_results: 0 };
 

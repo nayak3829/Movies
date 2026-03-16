@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Play, Plus, Check, Share2, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -39,13 +39,14 @@ export function TVDetailClient({ show }: TVDetailClientProps) {
   const [showPlayer, setShowPlayer] = useState(false);
   const title = show.name || show.title || 'Unknown';
   
-  const [inMyList, setInMyList] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const list = JSON.parse(localStorage.getItem('myList') || '[]');
-      return list.some((item: { id: number }) => item.id === show.id);
-    }
-    return false;
-  });
+  const [inMyList, setInMyList] = useState(false);
+
+  // Check localStorage after mount to avoid hydration mismatch
+  useEffect(() => {
+    const list = JSON.parse(localStorage.getItem('myList') || '[]');
+    const isInList = list.some((item: { id: number }) => item.id === show.id);
+    setInMyList(isInList);
+  }, [show.id]);
 
   const toggleMyList = () => {
     const list = JSON.parse(localStorage.getItem('myList') || '[]');
