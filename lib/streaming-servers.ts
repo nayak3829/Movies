@@ -12,12 +12,28 @@ export interface StreamingServer {
 // Updated March 2026 with verified working servers from TechVyro
 export const DEFAULT_SERVERS: StreamingServer[] = [
   {
+    id: 'vidsrc-to',
+    name: 'VidSrc TO',
+    url: 'vidsrc.to',
+    movieTemplate: 'https://vidsrc.to/embed/movie/{id}',
+    tvTemplate: 'https://vidsrc.to/embed/tv/{id}/{season}/{episode}',
+    priority: 0
+  },
+  {
+    id: 'vidsrc-vip',
+    name: 'VidSrc VIP',
+    url: 'vidsrc.vip',
+    movieTemplate: 'https://vidsrc.vip/embed/movie/{id}',
+    tvTemplate: 'https://vidsrc.vip/embed/tv/{id}/{season}/{episode}',
+    priority: 1
+  },
+  {
     id: 'vidsrc-icu',
     name: 'VidSrc ICU',
     url: 'vidsrc.icu',
     movieTemplate: 'https://vidsrc.icu/embed/movie/{id}',
     tvTemplate: 'https://vidsrc.icu/embed/tv/{id}/{season}/{episode}',
-    priority: 0
+    priority: 2
   },
   {
     id: 'vidsrc-cc',
@@ -25,7 +41,7 @@ export const DEFAULT_SERVERS: StreamingServer[] = [
     url: 'vidsrc.cc',
     movieTemplate: 'https://vidsrc.cc/v2/embed/movie/{id}',
     tvTemplate: 'https://vidsrc.cc/v2/embed/tv/{id}/{season}/{episode}',
-    priority: 1
+    priority: 3
   },
   {
     id: 'embed-su',
@@ -33,7 +49,7 @@ export const DEFAULT_SERVERS: StreamingServer[] = [
     url: 'embed.su',
     movieTemplate: 'https://embed.su/embed/movie/{id}',
     tvTemplate: 'https://embed.su/embed/tv/{id}/{season}/{episode}',
-    priority: 2
+    priority: 4
   },
   {
     id: 'vidsrc-me',
@@ -41,7 +57,7 @@ export const DEFAULT_SERVERS: StreamingServer[] = [
     url: 'vidsrc.me',
     movieTemplate: 'https://vidsrc.me/embed/movie/{id}',
     tvTemplate: 'https://vidsrc.me/embed/tv/{id}/{season}/{episode}',
-    priority: 3
+    priority: 5
   },
   {
     id: 'autoembed-pro',
@@ -49,23 +65,23 @@ export const DEFAULT_SERVERS: StreamingServer[] = [
     url: 'autoembed.pro',
     movieTemplate: 'https://autoembed.pro/embed/movie/{id}',
     tvTemplate: 'https://autoembed.pro/embed/tv/{id}/{season}/{episode}',
-    priority: 4
+    priority: 6
   },
   {
     id: 'vidfast',
     name: 'VidFast',
     url: 'vidfast.pro',
     movieTemplate: 'https://vidfast.pro/movie/{id}',
-    tvTemplate: 'https://vidfast.pro/tv/{id}/{season}/{episode}',
-    priority: 5
+    tvTemplate: 'https://vidfast.pro/embed/tv/{id}/{season}/{episode}',
+    priority: 7
   },
   {
     id: 'videasy',
     name: 'Videasy',
     url: 'player.videasy.net',
     movieTemplate: 'https://player.videasy.net/movie/{id}',
-    tvTemplate: 'https://player.videasy.net/tv/{id}/{season}/{episode}',
-    priority: 6
+    tvTemplate: 'https://player.videasy.net/embed/tv/{id}/{season}/{episode}',
+    priority: 8
   },
   {
     id: 'autoembed-cc',
@@ -73,7 +89,7 @@ export const DEFAULT_SERVERS: StreamingServer[] = [
     url: 'player.autoembed.cc',
     movieTemplate: 'https://player.autoembed.cc/embed/movie/{id}',
     tvTemplate: 'https://player.autoembed.cc/embed/tv/{id}/{season}/{episode}',
-    priority: 7
+    priority: 9
   },
   {
     id: 'uembed',
@@ -81,7 +97,7 @@ export const DEFAULT_SERVERS: StreamingServer[] = [
     url: 'uembed.site',
     movieTemplate: 'https://uembed.site/?id={id}',
     tvTemplate: 'https://uembed.site/?id={id}&s={season}&e={episode}',
-    priority: 8
+    priority: 10
   },
   {
     id: '111movies',
@@ -89,7 +105,7 @@ export const DEFAULT_SERVERS: StreamingServer[] = [
     url: '111movies.com',
     movieTemplate: 'https://111movies.com/movie/{id}',
     tvTemplate: 'https://111movies.com/tv/{id}/season/{season}/episode/{episode}',
-    priority: 9
+    priority: 11
   },
   {
     id: 'hyhd',
@@ -97,7 +113,7 @@ export const DEFAULT_SERVERS: StreamingServer[] = [
     url: 'hyhd.org',
     movieTemplate: 'https://hyhd.org/embed/{id}',
     tvTemplate: 'https://hyhd.org/embed/tv/{id}/{season}/{episode}',
-    priority: 10
+    priority: 12
   },
   {
     id: 'multiembed',
@@ -105,7 +121,7 @@ export const DEFAULT_SERVERS: StreamingServer[] = [
     url: 'multiembed.mov',
     movieTemplate: 'https://multiembed.mov/directstream.php?video_id={id}&tmdb=1',
     tvTemplate: 'https://multiembed.mov/directstream.php?video_id={id}&tmdb=1&s={season}&e={episode}',
-    priority: 11
+    priority: 13
   }
 ];
 
