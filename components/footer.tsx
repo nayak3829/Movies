@@ -149,6 +149,8 @@ export function Footer() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
+                      target={link.href.startsWith('http') || link.href.startsWith('mailto') ? '_blank' : undefined}
+                      rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                       className="text-xs md:text-sm text-muted-foreground hover:text-foreground transition-colors inline-block"
                     >
                       {link.label}

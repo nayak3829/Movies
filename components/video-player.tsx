@@ -146,9 +146,6 @@ export function VideoPlayer({
       : loadedServers.filter(s => s.id !== 'all-servers');
     setServers(filteredServers);
     
-    console.log("[v0] Loaded servers:", filteredServers.map(s => s.name));
-    console.log("[v0] TMDB ID:", tmdbId, "Type:", type, "IMDB:", imdbId);
-    
     // Start auto-fetch immediately with best server
     if (filteredServers.length > 0) {
       setIsAutoFetching(true);
@@ -160,8 +157,6 @@ export function VideoPlayer({
       const firstServer = filteredServers[0];
       const stats = getServerStats()[firstServer?.id];
       const hasGoodStats = stats && stats.successCount > stats.failCount;
-      
-      console.log("[v0] Starting with server:", firstServer?.name, "URL template:", firstServer?.movieTemplate);
       
       setStatusMessage(
         hasGoodStats 
@@ -207,13 +202,6 @@ export function VideoPlayer({
     ? getEmbedUrl(currentServer, tmdbId, type, currentSeason, currentEpisode, imdbId)
     : '';
   
-  // Debug log embed URL when it changes
-  useEffect(() => {
-    if (embedUrl) {
-      console.log("[v0] Current embed URL:", embedUrl);
-    }
-  }, [embedUrl]);
-
   const totalEpisodes = episodesPerSeason[currentSeason - 1] || 10;
   const hasNextEpisode = type === 'tv' && (currentEpisode < totalEpisodes || currentSeason < totalSeasons);
   const hasPrevEpisode = type === 'tv' && (currentEpisode > 1 || currentSeason > 1);
@@ -607,7 +595,7 @@ export function VideoPlayer({
                       <div>
                         <p className="text-[11px] font-medium text-blue-400 mb-0.5">Audio & Subtitles</p>
                         <p className="text-[10px] text-muted-foreground leading-relaxed">
-                          Video player ke andar CC/Settings icon use karein audio language aur subtitles change karne ke liye.
+                          Use the CC/Settings icon inside the player to change audio language and subtitles.
                         </p>
                       </div>
                     </div>
@@ -1112,11 +1100,9 @@ export function VideoPlayer({
             allow="autoplay; fullscreen; picture-in-picture; encrypted-media; accelerometer; gyroscope; clipboard-write"
             referrerPolicy="no-referrer-when-downgrade"
             onLoad={() => {
-              console.log("[v0] Iframe loaded successfully:", embedUrl);
               handleIframeLoad();
             }}
-            onError={(e) => {
-              console.log("[v0] Iframe error:", embedUrl, e);
+            onError={() => {
               if (isAutoFetching) {
                 tryNextServer();
               }

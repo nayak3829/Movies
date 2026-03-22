@@ -41,6 +41,19 @@ export function TVDetailClient({ show }: TVDetailClientProps) {
   
   const [inMyList, setInMyList] = useState(false);
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+      } catch {
+        // user cancelled or error
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+    }
+  };
+
   // Check localStorage after mount to avoid hydration mismatch
   useEffect(() => {
     const list = JSON.parse(localStorage.getItem('myList') || '[]');
@@ -172,7 +185,7 @@ export function TVDetailClient({ show }: TVDetailClientProps) {
                   {inMyList ? <Check className="w-4 h-4 md:w-5 md:h-5" /> : <Plus className="w-4 h-4 md:w-5 md:h-5" />}
                   {inMyList ? 'Added' : 'My List'}
                 </Button>
-                <Button size="icon" variant="outline" className="rounded-full w-9 h-9 md:w-10 md:h-10 bg-white/10 border-white/20 hover:bg-white/20">
+                <Button size="icon" variant="outline" className="rounded-full w-9 h-9 md:w-10 md:h-10 bg-white/10 border-white/20 hover:bg-white/20" onClick={handleShare} aria-label="Share">
                   <Share2 className="w-4 h-4 md:w-5 md:h-5" />
                 </Button>
               </div>
