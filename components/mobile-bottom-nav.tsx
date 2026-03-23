@@ -2,15 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Film, Tv, Bookmark, Flame } from 'lucide-react';
+import { Home, Film, Tv, Bookmark, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/movies', label: 'Movies', icon: Film },
-  { href: '/tv-shows', label: 'TV Shows', icon: Tv },
-  { href: '/new-popular', label: 'New', icon: Flame },
+  { href: '/tv-shows', label: 'TV', icon: Tv },
   { href: '/my-list', label: 'My List', icon: Bookmark },
+  { href: '/history', label: 'History', icon: History },
 ];
 
 export function MobileBottomNav() {

@@ -82,6 +82,7 @@ export function VideoPlayer({
   const [newServerTv, setNewServerTv] = useState('');
   const [serverStatsRefresh, setServerStatsRefresh] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [showEpisodePanel, setShowEpisodePanel] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const playerRef = useRef<HTMLDivElement>(null);
@@ -545,15 +546,42 @@ export function VideoPlayer({
 
   return (
     <div 
-      className={`fixed inset-0 z-50 bg-black group ${cursorVisible ? 'cursor-default' : 'cursor-none'}`}
-      onMouseMove={showControls}
-      onTouchStart={showControls}
-      onClick={showControls}
+      ref={playerRef}
+      className={`fixed z-50 bg-black group transition-all duration-500 ${
+        isMinimized
+          ? 'bottom-4 right-4 w-72 sm:w-80 h-44 sm:h-48 rounded-xl overflow-hidden shadow-2xl border border-white/20 cursor-default'
+          : `inset-0 ${cursorVisible ? 'cursor-default' : 'cursor-none'}`
+      }`}
+      onMouseMove={!isMinimized ? showControls : undefined}
+      onTouchStart={!isMinimized ? showControls : undefined}
+      onClick={!isMinimized ? showControls : undefined}
     >
+      {/* Minimized overlay with restore button */}
+      {isMinimized && (
+        <div className="absolute inset-0 z-[60] flex items-start justify-between p-2 bg-gradient-to-b from-black/70 to-transparent pointer-events-none">
+          <p className="text-white text-[10px] font-medium truncate max-w-[60%] drop-shadow">{title}</p>
+          <div className="flex gap-1 pointer-events-auto">
+            <button
+              onClick={() => setIsMinimized(false)}
+              className="w-6 h-6 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center transition-colors"
+              title="Restore"
+            >
+              <Maximize className="w-3 h-3 text-white" />
+            </button>
+            <button
+              onClick={onClose}
+              className="w-6 h-6 rounded-full bg-white/20 hover:bg-red-600/80 flex items-center justify-center transition-colors"
+              title="Close"
+            >
+              <X className="w-3 h-3 text-white" />
+            </button>
+          </div>
+        </div>
+      )}
       {/* Netflix-style Top Gradient Header */}
       <div 
         className={`absolute top-0 left-0 right-0 z-[35] transition-all duration-500 ${
-          controlsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'
+          isMinimized ? 'hidden' : controlsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'
         }`}
       >
         <div className="bg-gradient-to-b from-black/90 via-black/60 to-transparent pt-4 pb-16 sm:pt-6 sm:pb-24 px-4 sm:px-8">
@@ -580,6 +608,15 @@ export function VideoPlayer({
 
             {/* Right: Controls */}
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              {/* Minimize / PiP Button */}
+              <button
+                onClick={() => setIsMinimized(true)}
+                className="hidden sm:flex w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 backdrop-blur-sm border border-white/10 hover:bg-white/20 hover:border-white/30 transition-all duration-300 items-center justify-center"
+                title="Mini Player (Picture in Picture)"
+              >
+                <Minimize className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </button>
+
               {/* Server Indicator - clickable to open settings */}
               <button 
                 onClick={() => setShowSettings(true)}
@@ -931,7 +968,7 @@ export function VideoPlayer({
       {/* Netflix-style Bottom Controls Bar - Only show when loading or user hovers */}
       <div 
         className={`absolute bottom-0 left-0 right-0 z-[35] transition-all duration-500 ${
-          (controlsVisible && (isLoading || isAutoFetching || type === 'tv')) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'
+          isMinimized ? 'hidden' : (controlsVisible && (isLoading || isAutoFetching || type === 'tv')) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'
         }`}
       >
         <div className="bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-6 pb-3 sm:pt-8 sm:pb-4 px-3 sm:px-6">
@@ -1067,7 +1104,7 @@ export function VideoPlayer({
       </div>
 
       {/* Netflix-style Loading Overlay */}
-      {isLoading && (
+      {isLoading && !isMinimized && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/90 z-[25]">
           <div className="flex flex-col items-center gap-6 max-w-sm text-center px-6">
             {/* Netflix-style spinner */}

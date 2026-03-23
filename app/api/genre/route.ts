@@ -9,6 +9,9 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get('type') || 'movie';
   const page = searchParams.get('page') || '1';
   const language = searchParams.get('language');
+  const sortBy = searchParams.get('sortBy') || 'popularity.desc';
+  const year = searchParams.get('year');
+  const minRating = searchParams.get('minRating');
 
   if (!TMDB_API_KEY) {
     return NextResponse.json({ results: [], error: 'API key not configured' });
@@ -18,13 +21,21 @@ export async function GET(request: NextRequest) {
     const params = new URLSearchParams({
       api_key: TMDB_API_KEY,
       page,
-      sort_by: 'popularity.desc',
+      sort_by: sortBy,
     });
 
     if (genreId) params.set('with_genres', genreId);
     if (language) params.set('with_original_language', language);
+    if (year) {
+      if (type === 'movie') {
+        params.set('primary_release_year', year);
+      } else {
+        params.set('first_air_date_year', year);
+      }
+    }
+    if (minRating) params.set('vote_average.gte', minRating);
 
-    const url = (genreId || language)
+    const url = (genreId || language || year || minRating || sortBy !== 'popularity.desc')
       ? `${TMDB_BASE_URL}/discover/${type}?${params}`
       : `${TMDB_BASE_URL}/${type}/popular?api_key=${TMDB_API_KEY}&page=${page}`;
 

@@ -3,6 +3,7 @@ import { Inter, Bebas_Neue } from 'next/font/google'
 import { ScrollToTop } from '@/components/scroll-to-top'
 import { WhatsAppPopup } from '@/components/whatsapp-popup'
 import { MobileBottomNav } from '@/components/mobile-bottom-nav'
+import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
 
 const inter = Inter({ 
@@ -51,12 +52,19 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark" data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${bebasNeue.variable} font-sans antialiased pb-16 md:pb-0`} suppressHydrationWarning>
-        {children}
-        <WhatsAppPopup />
-        <ScrollToTop />
-        <MobileBottomNav />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange={false}
+        >
+          {children}
+          <WhatsAppPopup />
+          <ScrollToTop />
+          <MobileBottomNav />
+        </ThemeProvider>
       </body>
     </html>
   )
