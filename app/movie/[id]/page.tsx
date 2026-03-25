@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 
 export const revalidate = 86400;
 
@@ -14,6 +15,49 @@ interface MoviePageProps {
 }
 
 const emptyResponse: MovieResponse = { page: 1, results: [], total_pages: 0, total_results: 0 };
+
+export async function generateMetadata({ params }: MoviePageProps): Promise<Metadata> {
+  const { id } = await params;
+  const movieId = parseInt(id, 10);
+  if (isNaN(movieId)) return {};
+
+  try {
+    const movie = await getMovieDetails(movieId);
+    const title = movie.title || 'Movie';
+    const description = movie.overview
+      ? movie.overview.slice(0, 160)
+      : `Watch ${title} on TechVyro`;
+    const year = movie.release_date?.split('-')[0];
+    const fullTitle = year ? `${title} (${year}) — TechVyro` : `${title} — TechVyro`;
+
+    const imageUrl = movie.backdrop_path
+      ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`
+      : movie.poster_path
+      ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+      : undefined;
+
+    return {
+      title: fullTitle,
+      description,
+      openGraph: {
+        title: fullTitle,
+        description,
+        type: 'video.movie',
+        ...(imageUrl && {
+          images: [{ url: imageUrl, width: 1280, height: 720, alt: title }],
+        }),
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: fullTitle,
+        description,
+        ...(imageUrl && { images: [imageUrl] }),
+      },
+    };
+  } catch {
+    return { title: 'Movie — TechVyro' };
+  }
+}
 
 export default async function MoviePage({ params }: MoviePageProps) {
   const { id } = await params;
@@ -48,14 +92,11 @@ export default async function MoviePage({ params }: MoviePageProps) {
 
       <ReviewsSection reviews={movieReviews} />
 
-      {/* Similar Movies */}
       {similarMovies.results.length > 0 && (
         <section className="py-8">
           <MovieRow title="More Like This" movies={similarMovies.results} />
         </section>
       )}
-
-      
     </main>
   );
 }

@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const res = await fetch(
       `https://api.themoviedb.org/3/trending/all/day?api_key=${apiKey}&language=en-US`,
-      { next: { revalidate: 3600 } }
+      { next: { revalidate: 21600 } }
     );
     const data = await res.json();
     return NextResponse.json({ results: data.results?.slice(0, 12) || [] });

@@ -20,15 +20,33 @@ const bebasNeue = Bebas_Neue({
   variable: '--font-bebas'
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://techvyro.replit.app';
+
 export const metadata: Metadata = {
-  title: 'TechVyro - Watch Movies & TV Shows',
-  description: 'Discover and stream the latest movies and TV shows. Your ultimate entertainment destination.',
-  generator: 'v0.app',
+  title: {
+    default: 'TechVyro - Watch Movies & TV Shows',
+    template: '%s | TechVyro',
+  },
+  description: 'Discover and stream the latest movies and TV shows. Browse popular, top-rated, and trending content on TechVyro — your ultimate entertainment destination.',
+  metadataBase: new URL(siteUrl),
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'TechVyro',
+  },
+  openGraph: {
+    type: 'website',
+    siteName: 'TechVyro',
+    title: 'TechVyro - Watch Movies & TV Shows',
+    description: 'Discover and stream the latest movies and TV shows. Browse popular, top-rated, and trending content.',
+    url: siteUrl,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'TechVyro - Watch Movies & TV Shows',
+    description: 'Discover and stream the latest movies and TV shows.',
+    site: '@TechVyro',
   },
   icons: {
     icon: [

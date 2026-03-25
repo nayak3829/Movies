@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 
 export const revalidate = 86400;
 
@@ -14,6 +15,49 @@ interface TVPageProps {
 }
 
 const emptyResponse: MovieResponse = { page: 1, results: [], total_pages: 0, total_results: 0 };
+
+export async function generateMetadata({ params }: TVPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const tvId = parseInt(id, 10);
+  if (isNaN(tvId)) return {};
+
+  try {
+    const show = await getTVDetails(tvId);
+    const title = show.name || show.title || 'TV Show';
+    const description = show.overview
+      ? show.overview.slice(0, 160)
+      : `Watch ${title} on TechVyro`;
+    const year = show.first_air_date?.split('-')[0];
+    const fullTitle = year ? `${title} (${year}) — TechVyro` : `${title} — TechVyro`;
+
+    const imageUrl = show.backdrop_path
+      ? `https://image.tmdb.org/t/p/w1280${show.backdrop_path}`
+      : show.poster_path
+      ? `https://image.tmdb.org/t/p/w500${show.poster_path}`
+      : undefined;
+
+    return {
+      title: fullTitle,
+      description,
+      openGraph: {
+        title: fullTitle,
+        description,
+        type: 'video.tv_show',
+        ...(imageUrl && {
+          images: [{ url: imageUrl, width: 1280, height: 720, alt: title }],
+        }),
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: fullTitle,
+        description,
+        ...(imageUrl && { images: [imageUrl] }),
+      },
+    };
+  } catch {
+    return { title: 'TV Show — TechVyro' };
+  }
+}
 
 export default async function TVPage({ params }: TVPageProps) {
   const { id } = await params;
@@ -48,14 +92,11 @@ export default async function TVPage({ params }: TVPageProps) {
 
       <ReviewsSection reviews={showReviews} />
 
-      {/* Similar Shows */}
       {similarShows.results.length > 0 && (
         <section className="py-8">
           <MovieRow title="More Like This" movies={similarShows.results} />
         </section>
       )}
-
-      
     </main>
   );
 }

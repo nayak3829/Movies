@@ -12,7 +12,9 @@ A Netflix-style movie and TV show streaming website built with **Next.js 15 App 
 
 ## Architecture
 - `app/` — Next.js App Router pages (server components)
-- `app/api/` — API routes (search, genre discovery, trailer key)
+- `app/api/` — API routes (search, genre discovery, trailer key, trending)
+- `app/sitemap.ts` — Dynamic sitemap (static routes + popular movie/TV IDs from TMDB)
+- `app/robots.ts` — robots.txt (allows all except /api/ and /profile)
 - `components/` — Client components
 - `lib/tmdb.ts` — TMDB API helpers (server-side only)
 - `lib/streaming-servers.ts` — Video embed URL helpers
