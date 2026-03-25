@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { Film } from 'lucide-react';
 
 export const revalidate = 14400;
@@ -111,7 +112,9 @@ export default async function MoviesPage() {
           </div>
         ) : (
           <div className="space-y-0 md:space-y-1">
-            <GenreFilter genres={MOVIE_GENRES} initialRows={initialRows} type="movie" />
+            <Suspense fallback={null}>
+              <GenreFilter genres={MOVIE_GENRES} initialRows={initialRows} type="movie" />
+            </Suspense>
             <LanguageFilter type="movie" />
           </div>
         )}

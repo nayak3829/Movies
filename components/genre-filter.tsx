@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Loader2, ChevronDown, SlidersHorizontal, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Movie } from '@/lib/tmdb';
@@ -49,6 +50,7 @@ const YEAR_OPTIONS = [
 ];
 
 export function GenreFilter({ genres, initialRows, type }: GenreFilterProps) {
+  const searchParams = useSearchParams();
   const [activeGenre, setActiveGenre] = useState<number | null>(null);
   const [filteredMovies, setFilteredMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -60,6 +62,24 @@ export function GenreFilter({ genres, initialRows, type }: GenreFilterProps) {
   const [minRating, setMinRating] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const pillsRef = useRef<HTMLDivElement>(null);
+  const initializedRef = useRef(false);
+
+  useEffect(() => {
+    if (initializedRef.current) return;
+    const genreParam = searchParams.get('genre');
+    if (genreParam) {
+      const genreId = parseInt(genreParam, 10);
+      if (!isNaN(genreId) && genres.some(g => g.id === genreId)) {
+        initializedRef.current = true;
+        handleGenreSelect(genreId);
+        setTimeout(() => {
+          const activePill = pillsRef.current?.querySelector(`[data-genre="${genreId}"]`);
+          activePill?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }, 300);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, genres]);
 
   const scrollPills = (dir: 'left' | 'right') => {
     if (!pillsRef.current) return;
@@ -191,6 +211,7 @@ export function GenreFilter({ genres, initialRows, type }: GenreFilterProps) {
           {genres.map(genre => (
             <button
               key={genre.id}
+              data-genre={genre.id}
               onClick={() => handleGenreSelect(genre.id)}
               className={cn(
                 'flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border',

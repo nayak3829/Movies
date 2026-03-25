@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Navbar } from '@/components/navbar';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Search, Loader2, Film, Tv, Star, TrendingUp } from 'lucide-react';
+import { Search, Loader2, Film, Tv, Star, TrendingUp, Hash } from 'lucide-react';
 import { getImageUrl } from '@/lib/tmdb';
 
 interface SearchResult {
@@ -61,6 +61,8 @@ function ResultCard({ item }: { item: SearchResult }) {
   );
 }
 
+const IMDB_ID_REGEX = /^tt\d{5,10}$/i;
+
 function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -71,12 +73,22 @@ function SearchContent() {
   const [loading, setLoading] = useState(false);
   const [trendingLoading, setTrendingLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'movie' | 'tv'>('all');
+  const [isImdbSearch, setIsImdbSearch] = useState(false);
 
   const doSearch = useCallback(async (value: string) => {
-    if (!value.trim()) { setResults([]); return; }
+    if (!value.trim()) { setResults([]); setIsImdbSearch(false); return; }
     setLoading(true);
+
+    const isImdb = IMDB_ID_REGEX.test(value.trim());
+    setIsImdbSearch(isImdb);
+
     try {
-      const res = await fetch(`/api/search?query=${encodeURIComponent(value)}`);
+      let res;
+      if (isImdb) {
+        res = await fetch(`/api/imdb?id=${encodeURIComponent(value.trim())}`);
+      } else {
+        res = await fetch(`/api/search?query=${encodeURIComponent(value)}`);
+      }
       const data = await res.json();
       setResults(data.results?.filter((r: SearchResult) => r.media_type !== 'person') || []);
     } catch { setResults([]); }
@@ -104,6 +116,7 @@ function SearchContent() {
   };
 
   const filtered = filter === 'all' ? results : results.filter(r => r.media_type === filter);
+  const isImdbLike = query.trim().toLowerCase().startsWith('tt');
 
   return (
     <main className="min-h-screen bg-background">
@@ -114,24 +127,41 @@ function SearchContent() {
         </h1>
 
         {/* Search Bar */}
-        <form onSubmit={handleSubmit} className="relative max-w-2xl mb-6">
+        <form onSubmit={handleSubmit} className="relative max-w-2xl mb-3">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <input
             type="text"
             value={query}
             onChange={e => {
               setQuery(e.target.value);
-              if (!e.target.value.trim()) setResults([]);
+              if (!e.target.value.trim()) { setResults([]); setIsImdbSearch(false); }
             }}
-            placeholder="Search movies, TV shows..."
+            placeholder="Search movies, shows, or enter IMDb ID (e.g. tt1375666)..."
             autoFocus
             className="w-full pl-12 pr-4 py-4 rounded-xl bg-white/8 border border-white/15 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 text-base transition-all"
           />
           {loading && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 animate-spin text-primary" />}
         </form>
 
-        {/* Type Filters — shown when results exist */}
-        {results.length > 0 && (
+        {/* IMDb hint */}
+        {isImdbLike && !isImdbSearch && (
+          <p className="text-xs text-muted-foreground mb-4 flex items-center gap-1.5">
+            <Hash className="w-3 h-3 text-yellow-400" />
+            Tip: Press Enter or Search to look up by IMDb ID
+          </p>
+        )}
+        {isImdbSearch && results.length > 0 && (
+          <div className="flex items-center gap-2 mb-4">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 text-xs font-medium">
+              <Hash className="w-3 h-3" />
+              IMDb ID Search
+            </span>
+            <span className="text-xs text-muted-foreground">{results.length} result{results.length !== 1 ? 's' : ''} found</span>
+          </div>
+        )}
+
+        {/* Type Filters — shown when results exist and not IMDb search */}
+        {results.length > 0 && !isImdbSearch && (
           <div className="flex items-center gap-2 mb-6">
             {(['all', 'movie', 'tv'] as const).map(f => (
               <button
@@ -153,7 +183,9 @@ function SearchContent() {
         {!loading && q && results.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <p className="text-white/40 text-xl mb-2">No results for &ldquo;{q}&rdquo;</p>
-            <p className="text-white/25 text-sm">Try a different search term</p>
+            <p className="text-white/25 text-sm">
+              {IMDB_ID_REGEX.test(q) ? 'No match found for this IMDb ID' : 'Try a different search term or use an IMDb ID (e.g. tt1375666)'}
+            </p>
           </div>
         )}
 

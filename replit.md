@@ -12,7 +12,7 @@ A Netflix-style movie and TV show streaming website built with **Next.js 15 App 
 
 ## Architecture
 - `app/` — Next.js App Router pages (server components)
-- `app/api/` — API routes (search, genre discovery, trailer key, trending)
+- `app/api/` — API routes (search, genre discovery, trailer key, trending, imdb ID lookup)
 - `app/sitemap.ts` — Dynamic sitemap (static routes + popular movie/TV IDs from TMDB)
 - `app/robots.ts` — robots.txt (allows all except /api/ and /profile)
 - `components/` — Client components
@@ -31,7 +31,8 @@ A Netflix-style movie and TV show streaming website built with **Next.js 15 App 
 - **Video Player** — Embedded iframe player with multiple streaming server fallback; Picture-in-Picture/Mini Player mode (minimize to floating corner window)
 - **Global Footer** — Rendered in layout.tsx, appears on every page; removed from individual page files
 - **Page Transition** — Thin red progress bar at top of viewport on route changes (components/page-transition.tsx)
-- **Search Page** — Dedicated `/search?q=` URL with grid results, type filter pills (All/Movie/TV); shows "Trending Right Now" grid (via `/api/trending`) when no query is entered
+- **Search Page** — Dedicated `/search?q=` URL with grid results, type filter pills (All/Movie/TV); shows "Trending Right Now" grid (via `/api/trending`) when no query is entered; supports IMDb ID search (`tt1234567` format, calls TMDB `/find` API)
+- **Genres Browse Page** — `/genres` — Visual backdrop-image genre cards for all Movie & TV Show genres; clicking a card navigates to `/movies?genre=id` or `/tv-shows?genre=id` with auto-selection of that genre pill
 - **Profile Page** — `/profile` with stats (movies watched, shows watched, list count, avg rating) + quick links + danger zone
 - **Recommended for You** — Client-side row on homepage from watch history (picks dominant media type, excludes already-watched)
 - **Notification Bell** — Reads from localStorage watchHistory to show personalized notifications
