@@ -8,6 +8,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { Footer } from '@/components/footer'
 import { PageTransition } from '@/components/page-transition'
 import { SurpriseMe } from '@/components/surprise-me'
+import { NetworkStatus } from '@/components/network-status'
 import './globals.css'
 
 const inter = Inter({ 
@@ -75,6 +76,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Preconnect to critical domains for faster loading */}
+        <link rel="preconnect" href="https://image.tmdb.org" />
+        <link rel="preconnect" href="https://api.themoviedb.org" />
+        <link rel="dns-prefetch" href="https://image.tmdb.org" />
+        <link rel="dns-prefetch" href="https://api.themoviedb.org" />
+      </head>
       <body className={`${inter.variable} ${bebasNeue.variable} font-sans antialiased pb-16 md:pb-0`} suppressHydrationWarning>
         <Script
           async
@@ -88,6 +96,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange={false}
         >
+          <NetworkStatus />
           <PageTransition />
           {children}
           <Footer />

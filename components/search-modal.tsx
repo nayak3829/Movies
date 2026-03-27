@@ -144,9 +144,15 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   }, []);
 
   useEffect(() => {
+    // Only search if query has at least 2 characters (faster perceived performance)
+    if (query.trim().length < 2) {
+      setResults([]);
+      return;
+    }
+    
     const debounce = setTimeout(() => {
       handleSearch(query, typeFilter, decadeFilter, ratingFilter);
-    }, 300);
+    }, 200); // Reduced from 300ms to 200ms
     return () => clearTimeout(debounce);
   }, [query, typeFilter, decadeFilter, ratingFilter, handleSearch]);
 
@@ -353,6 +359,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                           alt={title}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 16vw"
+                          loading="lazy"
                         />
                         {rating && (
                           <div className="absolute top-1 right-1 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-xs font-bold text-yellow-400 flex items-center gap-0.5">

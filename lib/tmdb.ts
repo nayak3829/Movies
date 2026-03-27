@@ -2,6 +2,10 @@ const TMDB_API_KEY = process.env.TMDB_API_KEY || '';
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
 
+// In-memory cache for API responses
+const cache = new Map<string, { data: unknown; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 export interface Movie {
   id: number;
   title: string;
@@ -81,8 +85,16 @@ export async function fetchFromTMDB<T>(endpoint: string, params: Record<string, 
     ...params,
   });
   
+  const cacheKey = `${endpoint}?${searchParams.toString()}`;
+  
+  // Check cache first
+  const cached = cache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data as T;
+  }
+  
   const response = await fetch(`${TMDB_BASE_URL}${endpoint}?${searchParams}`, {
-    next: { revalidate: 14400 },
+    next: { revalidate: 3600 }, // 1 hour ISR cache
   });
   
   if (!response.ok) {
@@ -92,7 +104,12 @@ export async function fetchFromTMDB<T>(endpoint: string, params: Record<string, 
     throw new Error(`TMDB API error: ${response.status}`);
   }
   
-  return response.json();
+  const data = await response.json();
+  
+  // Store in cache
+  cache.set(cacheKey, { data, timestamp: Date.now() });
+  
+  return data;
 }
 
 export async function getTrending(timeWindow: 'day' | 'week' = 'week'): Promise<MovieResponse> {

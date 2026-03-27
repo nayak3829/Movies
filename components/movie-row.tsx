@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, memo, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Movie } from '@/lib/tmdb';
 import { MovieCard } from './movie-card';
@@ -12,7 +12,7 @@ interface MovieRowProps {
   showRank?: boolean;
 }
 
-export function MovieRow({ title, movies, showRank = false }: MovieRowProps) {
+function MovieRowComponent({ title, movies, showRank = false }: MovieRowProps) {
   const rowRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
@@ -27,7 +27,7 @@ export function MovieRow({ title, movies, showRank = false }: MovieRowProps) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const scroll = (direction: 'left' | 'right') => {
+  const scroll = useCallback((direction: 'left' | 'right') => {
     if (rowRef.current) {
       const scrollAmount = rowRef.current.clientWidth * 0.75;
       const newScrollLeft = direction === 'left' 
@@ -39,15 +39,15 @@ export function MovieRow({ title, movies, showRank = false }: MovieRowProps) {
         behavior: 'smooth',
       });
     }
-  };
+  }, []);
 
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     if (rowRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = rowRef.current;
       setShowLeftArrow(scrollLeft > 10);
       setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
     }
-  };
+  }, []);
 
   if (!movies || movies.length === 0) return null;
 
@@ -132,3 +132,10 @@ export function MovieRow({ title, movies, showRank = false }: MovieRowProps) {
     </div>
   );
 }
+
+// Memoize to prevent unnecessary re-renders
+export const MovieRow = memo(MovieRowComponent, (prevProps, nextProps) => {
+  return prevProps.title === nextProps.title && 
+         prevProps.movies.length === nextProps.movies.length &&
+         prevProps.showRank === nextProps.showRank;
+});

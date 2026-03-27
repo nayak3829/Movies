@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Play, Plus, ThumbsUp, ChevronDown, Star } from 'lucide-react';
@@ -11,14 +11,16 @@ import { WatchProgress } from '@/components/watch-progress';
 interface MovieCardProps {
   movie: Movie;
   index?: number;
+  priority?: boolean;
 }
 
-export function MovieCard({ movie, index }: MovieCardProps) {
+function MovieCardComponent({ movie, index, priority = false }: MovieCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isMounted, setIsMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isInView, setIsInView] = useState(priority);
   const cardRef = useRef<HTMLDivElement>(null);
   
   const title = movie.title || movie.name || 'Unknown';
@@ -30,11 +32,29 @@ export function MovieCard({ movie, index }: MovieCardProps) {
     setIsMounted(true);
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
+    
+    // Intersection Observer for lazy loading
+    if (!priority && cardRef.current) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              setIsInView(true);
+              observer.disconnect();
+            }
+          });
+        },
+        { rootMargin: '100px', threshold: 0.01 }
+      );
+      observer.observe(cardRef.current);
+      return () => observer.disconnect();
+    }
+    
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  }, [priority]);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current || isMobile) return;
     
     const rect = cardRef.current.getBoundingClientRect();
@@ -47,16 +67,16 @@ export function MovieCard({ movie, index }: MovieCardProps) {
     const rotateY = (centerX - x) / 12;
     
     setRotation({ x: rotateX, y: rotateY });
-  };
+  }, [isMobile]);
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     setIsHovered(false);
     setRotation({ x: 0, y: 0 });
-  };
+  }, []);
 
-  const handleMouseEnter = () => {
+  const handleMouseEnter = useCallback(() => {
     if (!isMobile) setIsHovered(true);
-  };
+  }, [isMobile]);
 
   return (
     <Link href={`/${mediaType}/${movie.id}`} style={{ touchAction: 'manipulation' }}>
@@ -214,3 +234,8 @@ export function MovieCard({ movie, index }: MovieCardProps) {
     </Link>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders
+export const MovieCard = memo(MovieCardComponent, (prevProps, nextProps) => {
+  return prevProps.movie.id === nextProps.movie.id && prevProps.index === nextProps.index;
+});

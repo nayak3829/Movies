@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Play, Info, Volume2, VolumeX, Star, Film } from 'lucide-react';
@@ -9,6 +9,17 @@ import { Movie, getImageUrl } from '@/lib/tmdb';
 import { TrailerModal } from '@/components/trailer-modal';
 import { SurpriseMe } from '@/components/surprise-me';
 import { cn } from '@/lib/utils';
+
+// Preload critical images
+const preloadImage = (src: string) => {
+  if (typeof window !== 'undefined') {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = src;
+    document.head.appendChild(link);
+  }
+};
 
 interface HeroBannerProps {
   movies: Movie[];
@@ -22,8 +33,18 @@ export function HeroBanner({ movies }: HeroBannerProps) {
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [isFetchingTrailer, setIsFetchingTrailer] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const SLIDE_DURATION = 8000;
+
+  // Preload next image for smoother transitions
+  useEffect(() => {
+    const nextIndex = (currentIndex + 1) % movies.length;
+    const nextMovie = movies[nextIndex];
+    if (nextMovie?.backdrop_path) {
+      preloadImage(getImageUrl(nextMovie.backdrop_path, 'original'));
+    }
+  }, [currentIndex, movies]);
 
   const goToSlide = useCallback((index: number) => {
     setIsTransitioning(true);
@@ -80,12 +101,24 @@ export function HeroBanner({ movies }: HeroBannerProps) {
               isTransitioning ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
             )}
           >
+            {/* Shimmer placeholder */}
+            {!imageLoaded && (
+              <div className="absolute inset-0 bg-muted animate-pulse">
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+              </div>
+            )}
             <Image
               src={getImageUrl(currentMovie.backdrop_path, 'original')}
               alt={title}
               fill
-              className="object-cover object-top sm:object-center"
+              className={cn(
+                "object-cover object-top sm:object-center transition-opacity duration-500",
+                imageLoaded ? "opacity-100" : "opacity-0"
+              )}
               priority
+              onLoad={() => setImageLoaded(true)}
+              sizes="100vw"
+              quality={85}
             />
           </div>
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent md:via-background/50" />
