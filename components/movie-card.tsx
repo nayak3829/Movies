@@ -1,23 +1,27 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Play, Plus, ThumbsUp, ChevronDown, Star } from 'lucide-react';
 import { Movie, getImageUrl } from '@/lib/tmdb';
 import { cn } from '@/lib/utils';
+import { WatchProgress } from '@/components/watch-progress';
+import { UserRatingBadge } from '@/components/user-rating';
 
 interface MovieCardProps {
   movie: Movie;
   index?: number;
+  priority?: boolean;
 }
 
-export function MovieCard({ movie, index }: MovieCardProps) {
+function MovieCardComponent({ movie, index, priority = false }: MovieCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isMounted, setIsMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isInView, setIsInView] = useState(priority);
   const cardRef = useRef<HTMLDivElement>(null);
   
   const title = movie.title || movie.name || 'Unknown';
@@ -29,11 +33,29 @@ export function MovieCard({ movie, index }: MovieCardProps) {
     setIsMounted(true);
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
+    
+    // Intersection Observer for lazy loading
+    if (!priority && cardRef.current) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              setIsInView(true);
+              observer.disconnect();
+            }
+          });
+        },
+        { rootMargin: '100px', threshold: 0.01 }
+      );
+      observer.observe(cardRef.current);
+      return () => observer.disconnect();
+    }
+    
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  }, [priority]);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current || isMobile) return;
     
     const rect = cardRef.current.getBoundingClientRect();
@@ -46,16 +68,16 @@ export function MovieCard({ movie, index }: MovieCardProps) {
     const rotateY = (centerX - x) / 12;
     
     setRotation({ x: rotateX, y: rotateY });
-  };
+  }, [isMobile]);
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     setIsHovered(false);
     setRotation({ x: 0, y: 0 });
-  };
+  }, []);
 
-  const handleMouseEnter = () => {
+  const handleMouseEnter = useCallback(() => {
     if (!isMobile) setIsHovered(true);
-  };
+  }, [isMobile]);
 
   return (
     <Link href={`/${mediaType}/${movie.id}`} style={{ touchAction: 'manipulation' }}>
@@ -118,13 +140,18 @@ export function MovieCard({ movie, index }: MovieCardProps) {
             </div>
           )}
 
-          {/* Rating Badge - Mobile visible */}
+          {/* Rating Badges */}
           <div className={cn(
-            "absolute top-1.5 right-1.5 sm:top-2 sm:right-2 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-black/70 backdrop-blur-sm transition-opacity",
+            "absolute top-1.5 right-1.5 sm:top-2 sm:right-2 flex flex-col items-end gap-1 transition-opacity",
             isMounted && isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           )}>
-            <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500 fill-yellow-500" />
-            <span className="text-[10px] sm:text-xs font-medium">{rating}</span>
+            {/* TMDB Rating */}
+            <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-black/70 backdrop-blur-sm">
+              <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500 fill-yellow-500" />
+              <span className="text-[10px] sm:text-xs font-medium">{rating}</span>
+            </div>
+            {/* User Rating Badge */}
+            <UserRatingBadge mediaId={movie.id} />
           </div>
 
           {/* Hover Overlay */}
@@ -152,6 +179,14 @@ export function MovieCard({ movie, index }: MovieCardProps) {
               <p className="text-[9px] text-gray-400">{year}</p>
             </div>
           )}
+
+          {/* Watch Progress Bar */}
+          <div className="absolute bottom-0 left-0 right-0">
+            <WatchProgress 
+              contentId={movie.id} 
+              mediaType={mediaType as 'movie' | 'tv'} 
+            />
+          </div>
         </div>
         
         {/* Glow Effect - Desktop only */}
@@ -205,3 +240,8 @@ export function MovieCard({ movie, index }: MovieCardProps) {
     </Link>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders
+export const MovieCard = memo(MovieCardComponent, (prevProps, nextProps) => {
+  return prevProps.movie.id === nextProps.movie.id && prevProps.index === nextProps.index;
+});

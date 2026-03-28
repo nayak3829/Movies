@@ -7,12 +7,14 @@ import { HeroBanner } from '@/components/hero-banner';
 import { MovieRow } from '@/components/movie-row';
 import { ContinueWatching } from '@/components/continue-watching';
 import { BelowFoldRows } from '@/components/below-fold-rows';
+import { ComingSoon } from '@/components/coming-soon';
 import {
   getTrending,
   getPopularMovies,
   getNowPlayingMovies,
   getPopularTVShows,
   getMoviesByGenre,
+  getUpcomingMovies,
   MovieResponse,
 } from '@/lib/tmdb';
 
@@ -35,6 +37,7 @@ export default async function HomePage() {
     actionMovies,
     comedyMovies,
     horrorMovies,
+    upcoming,
   ] = await Promise.all([
     fetchWithFallback(() => getTrending('week'), emptyResponse),
     fetchWithFallback(() => getPopularMovies(), emptyResponse),
@@ -43,6 +46,7 @@ export default async function HomePage() {
     fetchWithFallback(() => getMoviesByGenre(28), emptyResponse),
     fetchWithFallback(() => getMoviesByGenre(35), emptyResponse),
     fetchWithFallback(() => getMoviesByGenre(27), emptyResponse),
+    fetchWithFallback(() => getUpcomingMovies(), emptyResponse),
   ]);
 
   const hasApiKey = process.env.TMDB_API_KEY;
@@ -82,6 +86,9 @@ export default async function HomePage() {
             <MovieRow title="Comedy" movies={comedyMovies.results} />
             <MovieRow title="Horror" movies={horrorMovies.results} />
             <MovieRow title="Popular TV Shows" movies={popularTV.results} />
+            
+            {/* Coming Soon Section */}
+            <ComingSoon movies={upcoming.results} title="Coming Soon" />
 
             <Suspense fallback={
               <div className="space-y-0 md:space-y-1">

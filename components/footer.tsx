@@ -62,6 +62,7 @@ const navLinks = [
   { label: 'New & Popular', href: '/new-popular' },
   { label: 'My Watchlist', href: '/my-list' },
   { label: 'History', href: '/history' },
+  { label: 'Genres', href: '/genres' },
 ];
 
 const connectLinks = [

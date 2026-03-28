@@ -39,6 +39,7 @@ import {
   resetServerStats,
   DEFAULT_SERVERS,
 } from '@/lib/streaming-servers';
+import { saveWatchProgress, getWatchProgress } from '@/components/watch-progress';
 
 interface VideoPlayerProps {
   tmdbId: number;
@@ -467,6 +468,16 @@ export function VideoPlayer({
     setIsLoading(false);
     setStatusMessage(`Playing from ${currentServer?.name}`);
     setIsAutoFetching(false);
+    
+    // Save initial watch progress when video starts
+    saveWatchProgress(
+      tmdbId, 
+      type, 
+      10, // Start at 10% when video begins
+      undefined,
+      type === 'tv' ? currentSeason : undefined,
+      type === 'tv' ? currentEpisode : undefined
+    );
     
     // Auto-hide settings dialog after video loads
     if (showSettings) {

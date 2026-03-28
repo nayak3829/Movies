@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Play, Plus, Check, Share2, Star, Film, ExternalLink, ArrowLeft } from 'lucide-react';
+import { Play, Plus, Check, Share2, Star, Film, ExternalLink, ArrowLeft, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { VideoPlayer } from '@/components/video-player';
 import { TrailerModal } from '@/components/trailer-modal';
 import { EpisodeGuide } from '@/components/episode-guide';
 import { getImageUrl } from '@/lib/tmdb';
 import { saveToWatchHistory } from '@/components/continue-watching';
+import { getWatchProgress } from '@/components/watch-progress';
 
 interface Video {
   key: string;
@@ -56,6 +57,8 @@ export function TVDetailClient({ show }: TVDetailClientProps) {
   
   const [inMyList, setInMyList] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [lastWatchedSeason, setLastWatchedSeason] = useState<number | null>(null);
+  const [lastWatchedEpisode, setLastWatchedEpisode] = useState<number | null>(null);
 
   const trailer = show.videos?.results?.find(
     (v) => v.site === 'YouTube' && v.type === 'Trailer'
@@ -82,6 +85,18 @@ export function TVDetailClient({ show }: TVDetailClientProps) {
     const list = JSON.parse(localStorage.getItem('myList') || '[]');
     const isInList = list.some((item: { id: number }) => item.id === show.id);
     setInMyList(isInList);
+    
+    // Find last watched episode from watch history
+    try {
+      const history = JSON.parse(localStorage.getItem('watchHistory') || '[]');
+      const lastWatched = history.find((item: { id: number; media_type: string }) => 
+        item.id === show.id && item.media_type === 'tv'
+      );
+      if (lastWatched && lastWatched.season && lastWatched.episode) {
+        setLastWatchedSeason(lastWatched.season);
+        setLastWatchedEpisode(lastWatched.episode);
+      }
+    } catch {}
   }, [show.id]);
 
   const toggleMyList = () => {
@@ -225,20 +240,33 @@ export function TVDetailClient({ show }: TVDetailClientProps) {
                   size="default"
                   className="gap-1.5 md:gap-2 bg-white text-black hover:bg-white/90 font-semibold shadow-lg text-xs sm:text-sm md:text-base px-4 md:px-6"
                   onClick={() => {
+                    const season = lastWatchedSeason || 1;
+                    const episode = lastWatchedEpisode || 1;
+                    setPlayerSeason(season);
+                    setPlayerEpisode(episode);
                     saveToWatchHistory({
                       id: show.id,
                       title,
                       poster_path: show.poster_path,
                       backdrop_path: show.backdrop_path,
                       media_type: 'tv',
-                      season: 1,
-                      episode: 1,
+                      season,
+                      episode,
                     });
                     setShowPlayer(true);
                   }}
                 >
-                  <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" />
-                  Play
+                  {lastWatchedSeason && lastWatchedEpisode ? (
+                    <>
+                      <RotateCcw className="w-4 h-4 md:w-5 md:h-5" />
+                      Resume S{lastWatchedSeason}E{lastWatchedEpisode}
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" />
+                      Play
+                    </>
+                  )}
                 </Button>
 
                 {trailer && (

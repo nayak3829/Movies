@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, X, Clock, TrendingUp, SlidersHorizontal, ChevronDown, Star, Calendar } from 'lucide-react';
+import { Search, X, Clock, TrendingUp, SlidersHorizontal, ChevronDown, Star, Calendar, Mic } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Movie, getImageUrl } from '@/lib/tmdb';
 import { cn } from '@/lib/utils';
+import { VoiceSearch } from '@/components/voice-search';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ interface SearchModalProps {
 const POPULAR_SEARCHES = [
   'Avengers', 'Breaking Bad', 'Stranger Things', 'The Batman',
   'Oppenheimer', 'Game of Thrones', 'Inception', 'The Bear',
+  'Wednesday', 'Dune', 'The Last of Us', 'Barbie',
 ];
 
 const RECENT_KEY = 'recentSearches';
@@ -143,9 +145,15 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   }, []);
 
   useEffect(() => {
+    // Only search if query has at least 2 characters (faster perceived performance)
+    if (query.trim().length < 2) {
+      setResults([]);
+      return;
+    }
+    
     const debounce = setTimeout(() => {
       handleSearch(query, typeFilter, decadeFilter, ratingFilter);
-    }, 300);
+    }, 200); // Reduced from 300ms to 200ms
     return () => clearTimeout(debounce);
   }, [query, typeFilter, decadeFilter, ratingFilter, handleSearch]);
 
@@ -216,6 +224,14 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               </button>
             )}
           </div>
+          {/* Voice Search */}
+          <VoiceSearch 
+            onResult={(text) => {
+              setQuery(text);
+              saveRecentSearch(text);
+            }}
+            className="flex-shrink-0"
+          />
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
@@ -352,6 +368,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                           alt={title}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 16vw"
+                          loading="lazy"
                         />
                         {rating && (
                           <div className="absolute top-1 right-1 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-xs font-bold text-yellow-400 flex items-center gap-0.5">

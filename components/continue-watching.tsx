@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Play, X, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getImageUrl } from '@/lib/tmdb';
+import { WatchProgress } from '@/components/watch-progress';
 
 export interface WatchHistoryItem {
   id: number;
@@ -95,6 +96,8 @@ export function ContinueWatching() {
                     alt={item.title}
                     fill
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    sizes="(max-width: 640px) 160px, (max-width: 768px) 200px, (max-width: 1024px) 240px, 280px"
+                    loading="lazy"
                   />
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center">
@@ -115,6 +118,16 @@ export function ContinueWatching() {
                     {label}
                   </div>
                 )}
+
+                {/* Watch Progress Bar */}
+                <div className="absolute bottom-0 left-0 right-0">
+                  <WatchProgress 
+                    contentId={item.id} 
+                    mediaType={item.media_type} 
+                    season={item.season}
+                    episode={item.episode}
+                  />
+                </div>
               </div>
 
               <div className="mt-1.5 px-0.5">

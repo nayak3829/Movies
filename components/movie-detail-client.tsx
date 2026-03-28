@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Play, Plus, Check, Share2, Star, Film, ExternalLink, ArrowLeft } from 'lucide-react';
+import { Play, Plus, Check, Share2, Star, Film, ExternalLink, ArrowLeft, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { VideoPlayer } from '@/components/video-player';
 import { TrailerModal } from '@/components/trailer-modal';
 import { getImageUrl } from '@/lib/tmdb';
 import { saveToWatchHistory } from '@/components/continue-watching';
+import { WatchProgress, getWatchProgress, saveWatchProgress } from '@/components/watch-progress';
 
 interface Video {
   key: string;
@@ -49,6 +50,7 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
   const [showTrailer, setShowTrailer] = useState(false);
   const [inMyList, setInMyList] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [watchProgressPercent, setWatchProgressPercent] = useState<number | null>(null);
 
   const trailer = movie.videos?.results?.find(
     (v) => v.site === 'YouTube' && v.type === 'Trailer'
@@ -76,6 +78,12 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
     const list = JSON.parse(localStorage.getItem('myList') || '[]');
     const isInList = list.some((item: { id: number }) => item.id === movie.id);
     setInMyList(isInList);
+    
+    // Check watch progress
+    const progress = getWatchProgress(movie.id, 'movie');
+    if (progress && progress.progress > 5 && progress.progress < 95) {
+      setWatchProgressPercent(progress.progress);
+    }
   }, [movie.id]);
 
   const toggleMyList = () => {
@@ -221,8 +229,17 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
                     setShowPlayer(true);
                   }}
                 >
-                  <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" />
-                  Play
+                  {watchProgressPercent ? (
+                    <>
+                      <RotateCcw className="w-4 h-4 md:w-5 md:h-5" />
+                      Resume ({Math.round(watchProgressPercent)}%)
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" />
+                      Play
+                    </>
+                  )}
                 </Button>
 
                 {trailer && (

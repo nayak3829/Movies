@@ -7,6 +7,7 @@ export const revalidate = 14400;
 import { Navbar } from '@/components/navbar';
 import { GenreFilter } from '@/components/genre-filter';
 import { LanguageFilter } from '@/components/language-filter';
+import { KeyboardShortcuts } from '@/components/keyboard-shortcuts';
 import {
   getPopularTVShows,
   getTopRatedTVShows,
@@ -97,16 +98,21 @@ export default async function TVShowsPage() {
       
       <div className="pt-20 sm:pt-24 pb-24 md:pb-8">
         <div className="container mx-auto px-4 mb-4 md:mb-6">
-          <div className="flex items-center gap-4 border-l-4 border-primary pl-4">
-            <Tv className="w-7 h-7 text-primary flex-shrink-0" />
-            <div>
-              <h1
-                className="text-3xl sm:text-4xl md:text-5xl font-bold leading-none"
-                style={{ fontFamily: 'var(--font-bebas)', letterSpacing: '0.05em' }}
-              >
-                TV Shows
-              </h1>
-              <p className="text-sm md:text-base text-muted-foreground mt-1">Binge-worthy series waiting for you</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 border-l-4 border-primary pl-4">
+              <Tv className="w-7 h-7 text-primary flex-shrink-0" />
+              <div>
+                <h1
+                  className="text-3xl sm:text-4xl md:text-5xl font-bold leading-none"
+                  style={{ fontFamily: 'var(--font-bebas)', letterSpacing: '0.05em' }}
+                >
+                  TV Shows
+                </h1>
+                <p className="text-sm md:text-base text-muted-foreground mt-1">Binge-worthy series waiting for you</p>
+              </div>
+            </div>
+            <div className="hidden md:block">
+              <KeyboardShortcuts variant="icon" />
             </div>
           </div>
         </div>
