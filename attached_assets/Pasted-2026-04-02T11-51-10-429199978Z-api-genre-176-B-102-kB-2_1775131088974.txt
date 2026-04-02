@@ -1,0 +1,53 @@
+2026-04-02T11:51:10.429199978Z ├ ƒ /api/genre                             176 B         102 kB
+2026-04-02T11:51:10.429204058Z ├ ƒ /api/imdb                              176 B         102 kB
+2026-04-02T11:51:10.429207959Z ├ ƒ /api/search                            176 B         102 kB
+2026-04-02T11:51:10.429211769Z ├ ƒ /api/season                            176 B         102 kB
+2026-04-02T11:51:10.429215589Z ├ ƒ /api/trailer                           176 B         102 kB
+2026-04-02T11:51:10.429219479Z ├ ƒ /api/trending                          176 B         102 kB
+2026-04-02T11:51:10.42922329Z ├ ƒ /collection/[id]                       201 B         154 kB
+2026-04-02T11:51:10.42922723Z ├ ○ /collections                           203 B         146 kB          4h      1y
+2026-04-02T11:51:10.42923109Z ├ ○ /genres                                203 B         146 kB          1d      1y
+2026-04-02T11:51:10.42923489Z ├ ○ /history                             2.55 kB         148 kB
+2026-04-02T11:51:10.429238711Z ├ ƒ /movie/[id]                             3 kB         189 kB
+2026-04-02T11:51:10.429242531Z ├ ○ /movies                                147 B         160 kB          4h      1y
+2026-04-02T11:51:10.429257152Z ├ ○ /my-list                             3.67 kB         149 kB
+2026-04-02T11:51:10.429259742Z ├ ○ /new-popular                           191 B         154 kB          4h      1y
+2026-04-02T11:51:10.429265423Z ├ ƒ /person/[id]                           203 B         146 kB
+2026-04-02T11:51:10.429268113Z ├ ○ /privacy-policy                        175 B         146 kB
+2026-04-02T11:51:10.429270623Z ├ ○ /profile                             5.62 kB         151 kB
+2026-04-02T11:51:10.429273063Z ├ ○ /robots.txt                            176 B         102 kB
+2026-04-02T11:51:10.429275704Z ├ ○ /search                              2.95 kB         149 kB
+2026-04-02T11:51:10.429278164Z ├ ○ /sitemap.xml                           176 B         102 kB          1d      1y
+2026-04-02T11:51:10.429280694Z ├ ○ /tv-shows                              146 B         160 kB          4h      1y
+2026-04-02T11:51:10.429285344Z └ ƒ /tv/[id]                             4.99 kB         191 kB
+2026-04-02T11:51:10.429288374Z + First Load JS shared by all             102 kB
+2026-04-02T11:51:10.429291625Z   ├ chunks/73cfcf22-55b03e86e96abb57.js  54.2 kB
+2026-04-02T11:51:10.429294175Z   ├ chunks/9736-fd193f6f7e463fd3.js      45.9 kB
+2026-04-02T11:51:10.429296685Z   └ other shared chunks (total)          1.94 kB
+2026-04-02T11:51:10.429299025Z 
+2026-04-02T11:51:10.429301355Z 
+2026-04-02T11:51:10.429316397Z ○  (Static)   prerendered as static content
+2026-04-02T11:51:10.429321007Z ƒ  (Dynamic)  server-rendered on demand
+2026-04-02T11:51:10.429324587Z 
+2026-04-02T11:51:11.808901007Z ==> Uploading build...
+2026-04-02T11:51:26.847168409Z ==> Uploaded in 10.0s. Compression took 5.0s
+2026-04-02T11:51:26.948682108Z ==> Build successful 🎉
+2026-04-02T11:51:32.64824911Z ==> Deploying...
+2026-04-02T11:51:32.717516197Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-04-02T11:52:03.124118918Z ==> Running 'pnpm start'
+2026-04-02T11:52:06.93381857Z 
+2026-04-02T11:52:06.93384823Z > my-project@0.1.0 start /opt/render/project/src
+2026-04-02T11:52:06.933854851Z > next start -p 5000 -H 0.0.0.0
+2026-04-02T11:52:06.933858511Z 
+2026-04-02T11:52:09.222738605Z    ▲ Next.js 15.5.14
+2026-04-02T11:52:09.222956849Z    - Local:        http://localhost:5000
+2026-04-02T11:52:09.22296913Z    - Network:      http://0.0.0.0:5000
+2026-04-02T11:52:09.223137444Z 
+2026-04-02T11:52:09.223145914Z  ✓ Starting...
+2026-04-02T11:52:11.325622417Z  ✓ Ready in 3.5s
+2026-04-02T11:52:34.809580799Z ==> Continuing to scan for open port 10000 (from PORT environment variable)...
+2026-04-02T11:53:35.433746293Z ==> Continuing to scan for open port 10000 (from PORT environment variable)...
+2026-04-02T11:54:35.953746805Z ==> Continuing to scan for open port 10000 (from PORT environment variable)...
+2026-04-02T11:55:36.496193168Z ==> Continuing to scan for open port 10000 (from PORT environment variable)...
+2026-04-02T11:56:37.039065687Z ==> Continuing to scan for open port 10000 (from PORT environment variable)...
+2026-04-02T11:57:17.486708703Z ==> Port scan timeout reached, failed to detect open port 10000 from PORT environment variable. Bind your service to port 10000 or update the PORT environment variable to the correct port.
