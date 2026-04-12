@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, X, Clock, TrendingUp, SlidersHorizontal, ChevronDown, Star, Calendar, Mic } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Movie, getImageUrl } from '@/lib/tmdb';
@@ -375,17 +374,16 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       className="group"
                     >
                       <div className="relative aspect-[2/3] rounded-md overflow-hidden mb-1.5 sm:mb-2 bg-muted">
-                        <Image
-                          src={getImageUrl(item.poster_path, 'w300')}
+                        <img
+                          src={getImageUrl(item.poster_path, 'w342')}
                           alt={title}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 16vw"
+                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
+                          decoding="async"
                         />
                         {rating && (
                           <div className="absolute top-1 right-1 bg-black/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-xs font-bold text-yellow-400 flex items-center gap-0.5">
-                            ⭐ {rating}
+                            {rating}
                           </div>
                         )}
                       </div>

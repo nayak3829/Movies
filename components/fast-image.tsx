@@ -1,13 +1,17 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Image, { ImageProps } from 'next/image';
 import { cn } from '@/lib/utils';
 
-interface FastImageProps extends Omit<ImageProps, 'onLoad'> {
+interface FastImageProps {
+  src: string;
+  alt: string;
+  className?: string;
   fallbackSrc?: string;
   showSkeleton?: boolean;
   skeletonClassName?: string;
+  priority?: boolean;
+  fill?: boolean;
 }
 
 export function FastImage({
@@ -18,7 +22,7 @@ export function FastImage({
   showSkeleton = true,
   skeletonClassName,
   priority,
-  ...props
+  fill,
 }: FastImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -64,14 +68,15 @@ export function FastImage({
         </div>
       )}
 
-      {/* Only render image when in view */}
+      {/* Native img - direct CDN load, no Vercel optimization */}
       {isInView && (
-        <Image
+        <img
           src={imageSrc}
           alt={alt}
           className={cn(
             'transition-opacity duration-300',
             isLoaded ? 'opacity-100' : 'opacity-0',
+            fill && 'absolute inset-0 w-full h-full object-cover',
             className
           )}
           onLoad={() => setIsLoaded(true)}
@@ -81,8 +86,6 @@ export function FastImage({
           }}
           loading={priority ? 'eager' : 'lazy'}
           decoding="async"
-          priority={priority}
-          {...props}
         />
       )}
     </div>

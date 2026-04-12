@@ -25,11 +25,9 @@ const nextConfig = {
   },
 
   images: {
-    formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 604800,
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256],
-    qualities: [75, 85, 90, 100],
+    // Use TMDB CDN directly - already optimized, no need for Vercel image optimization
+    // This prevents 100+ requests per user to Vercel's /_next/image API
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -37,7 +35,6 @@ const nextConfig = {
         pathname: '/t/p/**',
       },
     ],
-    unoptimized: process.env.NODE_ENV === 'development',
   },
 
   async headers() {

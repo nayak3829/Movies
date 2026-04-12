@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect, memo, useCallback } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Play, Plus, ThumbsUp, ChevronDown, Star, Film, Tv } from 'lucide-react';
 import { Movie, getImageUrl } from '@/lib/tmdb';
@@ -129,17 +128,24 @@ function MovieCardComponent({ movie, index, priority = false }: MovieCardProps) 
             </div>
           )}
           
-          <Image
-            src={getImageUrl(movie.poster_path, 'w500')}
-            alt={title}
-            fill
-            className={cn(
-              "object-cover transition-opacity duration-300",
-              imageLoaded ? "opacity-100" : "opacity-0"
-            )}
-            sizes="(max-width: 640px) 40vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
-            onLoad={() => setImageLoaded(true)}
-          />
+          {/* Native img - loads directly from TMDB CDN, no Vercel optimization overhead */}
+          {isInView && (
+            <img
+              src={getImageUrl(movie.poster_path, 'w342')}
+              alt={title}
+              className={cn(
+                "absolute inset-0 w-full h-full object-cover transition-opacity duration-300",
+                imageLoaded ? "opacity-100" : "opacity-0"
+              )}
+              loading={priority ? "eager" : "lazy"}
+              decoding="async"
+              onLoad={() => setImageLoaded(true)}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/placeholder-movie.jpg';
+                setImageLoaded(true);
+              }}
+            />
+          )}
           
           {/* Rank Badge - Netflix style */}
           {typeof index === 'number' && index < 10 && (

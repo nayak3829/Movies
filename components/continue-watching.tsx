@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Play, X, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -91,13 +90,12 @@ export function ContinueWatching() {
             >
               <div className="relative aspect-video rounded-md sm:rounded-lg overflow-hidden bg-muted">
                 {item.backdrop_path || item.poster_path ? (
-                  <Image
+                  <img
                     src={getImageUrl(item.backdrop_path || item.poster_path, 'w500')}
                     alt={item.title}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    sizes="(max-width: 640px) 160px, (max-width: 768px) 200px, (max-width: 1024px) 240px, 280px"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center">

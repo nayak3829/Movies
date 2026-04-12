@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Bell, BellOff, Calendar, Star, ChevronLeft, ChevronRight, Play, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -151,12 +150,12 @@ export function ComingSoon({ movies, title = "Coming Soon" }: ComingSoonProps) {
                 <div className="relative group">
                   {/* Backdrop Image */}
                   <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
-                    <Image
+                    <img
                       src={getImageUrl(movie.backdrop_path || movie.poster_path, 'w780')}
                       alt={title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="320px"
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                      decoding="async"
                     />
                     
                     {/* Gradient Overlay */}

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 interface OptimizedImageProps {
@@ -12,8 +11,6 @@ interface OptimizedImageProps {
   height?: number;
   className?: string;
   priority?: boolean;
-  sizes?: string;
-  quality?: number;
   onLoad?: () => void;
 }
 
@@ -25,8 +22,6 @@ export function OptimizedImage({
   height,
   className,
   priority = false,
-  sizes,
-  quality = 75,
   onLoad,
 }: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -78,21 +73,18 @@ export function OptimizedImage({
         </div>
       )}
 
+      {/* Native img - direct CDN load */}
       {isInView && (
-        <Image
+        <img
           src={hasError ? placeholderSrc : src}
           alt={alt}
-          fill={fill}
           width={!fill ? width : undefined}
           height={!fill ? height : undefined}
           className={cn(
             'transition-opacity duration-300',
             isLoaded ? 'opacity-100' : 'opacity-0',
-            fill && 'object-cover'
+            fill && 'absolute inset-0 w-full h-full object-cover'
           )}
-          sizes={sizes}
-          quality={quality}
-          priority={priority}
           onLoad={handleLoad}
           onError={handleError}
           loading={priority ? 'eager' : 'lazy'}
