@@ -5,6 +5,7 @@ import { ContinueWatching } from '@/components/continue-watching';
 import { ContentFilter } from '@/components/content-filter';
 import { ComingSoon } from '@/components/coming-soon';
 import { RecommendedRow } from '@/components/recommended-row';
+import { CategoryPills } from '@/components/category-pills';
 import { getHomePageDataSafe } from '@/lib/tmdb';
 
 // Static generation with ISR - regenerate every 4 hours
@@ -43,6 +44,9 @@ export default async function HomePage() {
           <HeroBanner movies={data.trending.results.slice(0, 5)} />
           
           <div className="-mt-16 sm:-mt-24 md:-mt-32 relative z-10 space-y-0 md:space-y-1 pb-24 md:pb-8">
+            {/* Quick category filter pills */}
+            <CategoryPills />
+            
             <ContinueWatching />
             <ContentFilter />
 

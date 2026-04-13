@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect, memo, useCallback } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Flame } from 'lucide-react';
 import { Movie } from '@/lib/tmdb';
 import { MovieCard } from './movie-card';
 import { cn } from '@/lib/utils';
@@ -53,42 +53,46 @@ function MovieRowComponent({ title, movies, showRank = false }: MovieRowProps) {
 
   return (
     <div className="relative group py-3 md:py-5">
-      {/* Title with better typography */}
+      {/* Title with better typography and decorations */}
       <div className="flex items-center justify-between mb-3 md:mb-4 px-4 md:px-12">
-        <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold tracking-tight">{title}</h2>
-        {/* Mobile scroll indicator */}
-        {isMounted && isMobile && (
-          <div className="flex items-center gap-1">
-            <div className={cn(
-              "w-1.5 h-1.5 rounded-full transition-colors",
-              showLeftArrow ? "bg-primary" : "bg-muted"
-            )} />
-            <div className={cn(
-              "w-1.5 h-1.5 rounded-full transition-colors",
-              showRightArrow ? "bg-primary" : "bg-muted"
-            )} />
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {/* Trending indicator for specific rows */}
+          {(title.toLowerCase().includes('trending') || title.toLowerCase().includes('popular')) && (
+            <Flame className="w-5 h-5 text-orange-500 animate-pulse" />
+          )}
+          <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold tracking-tight">
+            {title}
+          </h2>
+          {showRank && (
+            <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-gradient-to-r from-red-600 to-red-500 text-white">
+              TOP 10
+            </span>
+          )}
+        </div>
+        {/* Explore all link */}
+        <button className="text-sm text-muted-foreground hover:text-white transition-colors flex items-center gap-1 group">
+          <span className="hidden sm:inline">Explore All</span>
+          <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+        </button>
       </div>
       
-      {/* Left Arrow - Desktop only */}
+      {/* Left Arrow - Desktop only with glassmorphism */}
       <button
         onClick={() => scroll('left')}
         className={cn(
-          'hidden md:flex absolute left-0 top-1/2 z-20 -translate-y-1/2 w-14 h-[70%] items-center justify-center',
-          'bg-gradient-to-r from-background via-background/80 to-transparent',
+          'hidden md:flex absolute left-0 top-1/2 z-20 -translate-y-1/2 w-16 h-[70%] items-center justify-start pl-2',
+          'bg-gradient-to-r from-background via-background/90 to-transparent',
           'opacity-0 group-hover:opacity-100 transition-all duration-300',
-          'hover:from-background hover:via-background/90',
           !showLeftArrow && 'pointer-events-none'
         )}
         aria-label="Scroll left"
       >
         <div className={cn(
-          "p-2 rounded-full bg-white/10 backdrop-blur-sm transition-all",
-          "hover:bg-white/20 hover:scale-110",
+          "p-2.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 transition-all",
+          "hover:bg-black/80 hover:scale-110 hover:border-white/20 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]",
           !showLeftArrow && "opacity-0"
         )}>
-          <ChevronLeft className="w-6 h-6" />
+          <ChevronLeft className="w-5 h-5" />
         </div>
       </button>
 
@@ -109,24 +113,23 @@ function MovieRowComponent({ title, movies, showRank = false }: MovieRowProps) {
         ))}
       </div>
 
-      {/* Right Arrow - Desktop only */}
+      {/* Right Arrow - Desktop only with glassmorphism */}
       <button
         onClick={() => scroll('right')}
         className={cn(
-          'hidden md:flex absolute right-0 top-1/2 z-20 -translate-y-1/2 w-14 h-[70%] items-center justify-center',
-          'bg-gradient-to-l from-background via-background/80 to-transparent',
+          'hidden md:flex absolute right-0 top-1/2 z-20 -translate-y-1/2 w-16 h-[70%] items-center justify-end pr-2',
+          'bg-gradient-to-l from-background via-background/90 to-transparent',
           'opacity-0 group-hover:opacity-100 transition-all duration-300',
-          'hover:from-background hover:via-background/90',
           !showRightArrow && 'pointer-events-none'
         )}
         aria-label="Scroll right"
       >
         <div className={cn(
-          "p-2 rounded-full bg-white/10 backdrop-blur-sm transition-all",
-          "hover:bg-white/20 hover:scale-110",
+          "p-2.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 transition-all",
+          "hover:bg-black/80 hover:scale-110 hover:border-white/20 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]",
           !showRightArrow && "opacity-0"
         )}>
-          <ChevronRight className="w-6 h-6" />
+          <ChevronRight className="w-5 h-5" />
         </div>
       </button>
     </div>
