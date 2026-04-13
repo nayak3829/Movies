@@ -153,6 +153,21 @@ export function VideoPlayer({
     return () => clearInterval(id);
   }, [isMinimized, isLoading]);
 
+  // Variables that will be used below - declaring refs early
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const triedServersRef = useRef<Set<number>>(new Set());
+  const [isMounted, setIsMounted] = useState(false);
+  const lastMouseMoveRef = useRef<number>(Date.now());
+
+  // Current server computed value
+  const currentServer = servers[currentServerIndex];
+
+  // Mount check for hydration safety
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Remember last successful server preference
   useEffect(() => {
     if (!isLoading && currentServer && serverStatuses[currentServer.id] === 'success') {
@@ -199,7 +214,7 @@ export function VideoPlayer({
         }, 5000);
       }
     });
-  }, [isMounted, servers.length > 0]);
+  }, [isMounted, servers, tmdbId, type, currentSeason, currentEpisode, imdbId]);
 
   // Preload next server iframe for faster fallback
   useEffect(() => {
@@ -321,16 +336,6 @@ export function VideoPlayer({
     return { totalServers, testedServers, goodServers, totalRequests, avgSuccessRate };
   };
 
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const triedServersRef = useRef<Set<number>>(new Set());
-  const [isMounted, setIsMounted] = useState(false);
-
-  // Mount check for hydration safety
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   // Load servers on mount - use smart auto-fetch sorting and start auto-fetch immediately
   useEffect(() => {
     if (!isMounted) return;
@@ -393,7 +398,6 @@ export function VideoPlayer({
     };
   }, []);
 
-  const currentServer = servers[currentServerIndex];
   const baseEmbedUrl = currentServer 
     ? getEmbedUrl(currentServer, tmdbId, type, currentSeason, currentEpisode, imdbId)
     : '';
@@ -666,7 +670,6 @@ export function VideoPlayer({
   const [controlsVisible, setControlsVisible] = useState(true);
   const [cursorVisible, setCursorVisible] = useState(true);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastMouseMoveRef = useRef<number>(Date.now());
 
   // Auto-hide controls and cursor after 3 seconds of inactivity
   const showControls = useCallback(() => {
