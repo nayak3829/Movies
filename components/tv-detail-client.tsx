@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Play, Plus, Check, Share2, Star, Film, ExternalLink, ArrowLeft, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { VideoPlayer } from '@/components/video-player';
+import { CustomVideoPlayer } from '@/components/custom-video-player';
 import { TrailerModal } from '@/components/trailer-modal';
 import { EpisodeGuide } from '@/components/episode-guide';
 import { getImageUrl } from '@/lib/tmdb';
@@ -124,11 +124,12 @@ export function TVDetailClient({ show }: TVDetailClientProps) {
   return (
     <>
       {showPlayer && (
-        <VideoPlayer
+        <CustomVideoPlayer
           tmdbId={show.id}
           imdbId={show.external_ids?.imdb_id}
           type="tv"
           title={title}
+          posterPath={show.poster_path}
           season={playerSeason}
           episode={playerEpisode}
           totalSeasons={totalSeasons}

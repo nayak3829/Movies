@@ -89,6 +89,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Monetag verification */}
+        <meta name="monetag" content="10934cebed249ed1f395a53ee794e943" />
         {/* Preconnect to critical domains for faster loading */}
         <link rel="preconnect" href="https://image.tmdb.org" />
         <link rel="preconnect" href="https://api.themoviedb.org" />
@@ -96,11 +98,44 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://api.themoviedb.org" />
       </head>
       <body className={`${inter.variable} ${bebasNeue.variable} font-sans antialiased pb-16 md:pb-0`} suppressHydrationWarning>
+        {/* Google AdSense */}
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6111784142192967"
           crossOrigin="anonymous"
           strategy="afterInteractive"
+        />
+        {/* Monetag Popunder - highest earning */}
+        <Script
+          id="monetag-popunder"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(d,z,s){s=d.createElement('script');s.src='https://groleegni.net/401/8812752';try{(document.body||document.documentElement).appendChild(s)}catch(e){}})(document);`
+          }}
+        />
+        {/* Monetag In-Page Push - banner ads */}
+        <Script
+          id="monetag-inpage-push"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(d,z,s){s=d.createElement('script');s.src='https://dessertstormstay.com/400/8812752';try{(document.body||document.documentElement).appendChild(s)}catch(e){}})(document);`
+          }}
+        />
+        {/* Service Worker Registration for Push Notifications */}
+        <Script
+          id="sw-registration"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                  console.log('ServiceWorker registration successful');
+                }).catch(function(err) {
+                  console.log('ServiceWorker registration failed: ', err);
+                });
+              }
+            `
+          }}
         />
         <ThemeProvider
           attribute="class"

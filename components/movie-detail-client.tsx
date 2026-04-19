@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Play, Plus, Check, Share2, Star, Film, ExternalLink, ArrowLeft, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { VideoPlayer } from '@/components/video-player';
+import { CustomVideoPlayer } from '@/components/custom-video-player';
 import { TrailerModal } from '@/components/trailer-modal';
 import { getImageUrl } from '@/lib/tmdb';
 import { saveToWatchHistory } from '@/components/continue-watching';
@@ -107,11 +107,12 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
   return (
     <>
       {showPlayer && (
-        <VideoPlayer
+        <CustomVideoPlayer
           tmdbId={movie.id}
           imdbId={movie.external_ids?.imdb_id}
           type="movie"
           title={movie.title}
+          posterPath={movie.poster_path}
           onClose={() => setShowPlayer(false)}
         />
       )}
